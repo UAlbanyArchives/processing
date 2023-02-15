@@ -40,10 +40,33 @@
             <li class="nav-item">
               <a class="nav-link" href="https://archives.albany.edu/concern/daos/new">Hyrax upload</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link {{'active' if active == 'logs' }}" aria-current="{{'page' if active == 'logs' }}" href="/logs">Logs</a>
+            </li>
           </ul>
         </div>
       </div>
     </nav>
+
+    <div class="container mt-3" id="flash">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class=flashes>
+          {% for category, message in messages %}
+            {% if category == "success" %}
+              <div class="alert alert-success" role="alert">
+                {{ message }}
+              </div>
+            {% else %}
+              <div class="alert alert-danger" role="alert">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+    </div>
 
     <div class="container mt-3" id="content">
       {% block content %}{% endblock %}

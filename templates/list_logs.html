@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% set active = "logs" %}
+{% block title %}Logs{% endblock %}
+{% block content %}
+  <h1>View Logs</h1>
+  <div class="h5">
+    Available log files:
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Log files</th>
+    </thead>
+    <tbody>
+      {% for log_file in log_files %}
+        <tr>
+          <td><a href="/logs/{{ log_file }}">{{ log_file }}</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

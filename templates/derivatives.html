@@ -3,7 +3,77 @@
 {% block title %}Derivatives{% endblock %}
 {% block content %}
   <h1>Derivatives</h1>
-  <div class="alert alert-primary" role="alert">
-    Hey, lets create some derivatives!
+  <div class="h5">
+    Hey, lets convert some images to JPGs or PDFs!
   </div>
+
+  <form action="/derivatives" method="post">
+      <div class="mb-3">
+      <label for="packageID" class="form-label">Package ID</label>
+      <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label for="inputFormat" class="form-label">Input format</label>
+        <select class="form-select" name="inputFormat" id="inputFormat" aria-describedby="inputFormatHelp">
+          <option value="tif">tif</option>
+          <option value="jpg">jpg</option>
+          <option value="pdf">pdf</option>
+        </select>
+        <div id="inputFormatHelp" class="form-text">File extension for preservation files in a SIP, such as TIF, jpg, or PDF.</div>
+      </div>
+      <div class="col">
+        <label for="outputFormat" class="form-label">Output format</label>
+        <select class="form-select"name="outputFormat" id="outputFormat" aria-describedby="outputFormatHelp">
+          <option value="jpg">jpg</option>
+          <option value="pdf">pdf</option>
+          <option value="png">png</option>
+        </select>
+        <div id="outputFormatHelp" class="form-text">File extension for access files you would like to create, such as JPG or pdf.</div>
+      </div>
+      <div class="col">
+        <div class="form-text">
+          For output PDFs, all files in a folder will be combined into a PDF:
+          <div style="white-space: pre;">      ua809_JxkK2VWVFu7F8VWaTe72BG/
+              derivatives/
+                  book1.pdf
+              masters/
+                  book1/
+                      page1.tif
+                      page2.tif
+                      page3.tif
+                      ...
+              metadata/
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="checkOptional"  onclick="enableOptional()">
+      <label class="form-check-label" for="checkOptional">Use subpath</label>
+    </div>
+    <div class="mb-3">
+      <label for="subPath" class="form-label">Subpath (optional)</label>
+      <input class="form-control" name="subPath" id="optional" aria-describedby="subPathHelp" disabled>
+      <div id="subPathHelp" class="form-text">Only converts files in a folder within the /masters directory.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+  <script>
+    function enableOptional() {
+      if (document.getElementById("checkOptional").checked) {
+        console.log(false)
+        document.getElementById("optional").removeAttribute("disabled")
+      } else {
+        console.log(true)
+        document.getElementById("optional").setAttribute("disabled", true)
+      }
+    }
+    </script>
+
 {% endblock %}

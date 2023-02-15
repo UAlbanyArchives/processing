@@ -3,7 +3,42 @@
 {% block title %}Accession{% endblock %}
 {% block content %}
   <h1>Accession</h1>
-  <div class="alert alert-primary" role="alert">
+  <div class="h5">
     Hey, lets accession some stuff!
   </div>
+
+    <form action="/accession" method="post">
+      <div class="mb-3">
+      <label for="accessionID" class="form-label">Accession ID</label>
+      <input type="accessionID" class="form-control" name="accessionID" id="accessionID" aria-describedby="accessionIDHelp">
+      <div id="accessionIDHelp" class="form-text">Such as 2022-004. Create an accession record in <a href="https://aspace.library.albany.edu/accessions">ArchivesSpace</a>. Each accession must have a date and a related resouce! Use a dash (-) to connect the two accession ID fields.</div>
+    </div>
+    <div class="mb-3">
+      <label for="collectionID" class="form-label">Collection ID</label>
+      <input type="collectionID" class="form-control" name="collectionID" id="collectionID" aria-describedby="idHelp">
+      <div id="collectionIDHelp" class="form-text">Such as apap101 or ua902.010. Files should be placed on Lincoln in <a href="file:////Lincoln/Library/SPE_Processing/ingest">\\Lincoln\Library\SPE_Processing\ingest\[Collection ID]</a></div>
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="checkAltPath"  onclick="enableAltPath()">
+      <label class="form-check-label" for="checkAltPath">Use alternate path</label>
+    </div>
+    <div class="mb-3">
+      <label for="altPath" class="form-label">Alternate path (optional)</label>
+      <input class="form-control" name="altPath" id="altPath" disabled>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+    <script>
+    function enableAltPath() {
+      if (document.getElementById("checkAltPath").checked) {
+        console.log(false)
+        document.getElementById("altPath").removeAttribute("disabled")
+      } else {
+        console.log(true)
+        document.getElementById("altPath").setAttribute("disabled", true)
+      }
+    }
+    </script>
+
 {% endblock %}

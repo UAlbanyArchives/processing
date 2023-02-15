@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% set active = "logs" %}
+{% block title %}Logs{% endblock %}
+{% block content %}
+  <h1>View Logs</h1>
+  <div class="h5">
+    Viewing log file for {{logFilename}}
+  </div>
+
+  <div class="mb-3">
+    <label for="{{logFilename}}" class="form-label">{{logFilename}}</label>
+    <textarea class="form-control" id="{{logFilename}}" rows="20" readonly>{{log_text}}</textarea>
+  </div>
+{% endblock %}

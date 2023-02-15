@@ -19,8 +19,7 @@ In docker container:
 ```
 cd flask1
 export FLASK_DEBUG="1" 
-pip install flask
-pip install wtforms
+pip install flask wtforms
 flask run --host=0.0.0.0
 ```
 
