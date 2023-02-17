@@ -11,6 +11,7 @@ cd processing
 ```
 
 ### For development
+This lets you edit files while they're served from the container.
 ```
 docker pull python:3.11.2-slim-buster
 docker run --name flask1 -dit -p 5000:5000 -v ${PWD}:/flask1 python
