@@ -69,6 +69,10 @@ def derivatives():
 def ocr_get():
     return render_template('ocr.html')
 
+@app.get('/aspace')
+def aspace():
+    return render_template('aspace.html')
+
 @app.get('/package')
 def package_get():
     return render_template('package.html')

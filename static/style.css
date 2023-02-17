@@ -1,0 +1,12 @@
+.navbar {
+	--bs-navbar-padding-y: 0 !important;
+}
+
+.navbar-nav .nav-link.active {
+	background-color: #ffc107;
+}
+
+.navbar-nav .nav-link {
+	padding: 1rem;
+	padding-bottom: 1rem;
+}

@@ -2,7 +2,7 @@
 
 A Flask wrapper app for a [digital records processing workflow](https://github.com/UAlbanyArchives/ingest-processing-workflow).
 
-This is just for testing at the moment, so the Dockerfile isn't working yet. Instead run this:
+This is just for testing at the moment, so the Dockerfile isn't set up yet and there isn't a . Instead run this:
 
 Get code:
 ```
@@ -24,3 +24,5 @@ flask run --host=0.0.0.0
 ```
 
 Navigate to [http://localhost:5000](http://localhost:5000)
+
+If you stop the container, it might be easiest to just delete it and run everything from `docker run ...` down.
