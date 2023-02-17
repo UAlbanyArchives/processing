@@ -92,3 +92,6 @@ def view_log(logFilename):
     with open(os.path.join(log_dir, logFilename), "r") as f:
         text = f.read()
         return render_template('view_log.html', logFilename=escape(logFilename), log_text=text)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')

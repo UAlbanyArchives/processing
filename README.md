@@ -18,9 +18,16 @@ docker exec -it flask1 /bin/bash
 In docker container:
 ```
 cd flask1
+pip install -r requirements.txt
+```
+For development
+```
 export FLASK_DEBUG="1" 
-pip install flask wtforms
 flask run --host=0.0.0.0
+```
+For deployment instead of development
+```
+gunicorn --bind 0.0.0.0:5000 wsgi:app
 ```
 
 Navigate to [http://localhost:5000](http://localhost:5000)
