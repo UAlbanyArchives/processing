@@ -10,5 +10,6 @@ WORKDIR /flask1
 RUN pip install -r requirements.txt
 
 COPY . /flask1
+RUN ["chmod", "+x", "./gunicorn.sh"]
 
 ENTRYPOINT ["./gunicorn.sh"]
