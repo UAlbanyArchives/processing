@@ -14,7 +14,7 @@ cd processing
 This lets you edit files while they're served from the container.
 ```
 docker pull python:3.11.2-slim-buster
-docker run --name flask1 -dit -p 5000:5000 -v ${PWD}:/flask1 python
+docker run --name flask1 -dit -p 5000:5000 -v ${PWD}:/flask1 python:3.11.2-slim-buster
 docker exec -it flask1 /bin/bash
 ```
 In docker container:
