@@ -12,25 +12,33 @@ cd processing
 
 ### For development
 This lets you edit files while they're served from the container.
+
+If you don't have the test directories required, you can create them with:
 ```
-docker pull python:3.11.2-slim-buster
-docker run --name flask1 -dit -p 5000:5000 -v ${PWD}:/flask1 python:3.11.2-slim-buster
-docker exec -it flask1 /bin/bash
+python setup-dev.py
 ```
-In docker container:
+
+Run the app:
 ```
-cd flask1
-pip install -r requirements.txt
-export FLASK_DEBUG="1" 
-flask run --host=0.0.0.0
+docker-compose -f docker-compose.yml -f docker-compose-dev.yml up
 ```
+
+For another terminal:
+```
+docker exec -it processing_flask1_1 /bin/bash
+```
+
 Navigate to [http://localhost:5000](http://localhost:5000)
 
-If you stop the container, it might be easiest to just delete it and run everything from `docker run ...` down.
+When you're done:
+```
+docker-compose down
+```
 
 ### For deployment
+(Not currently working right)
 ```
 docker build -t "processing" .
-docker run -d -p 5000:5000 processing
+docker-compose -f docker-compose-prod.yml up
 ```
 Navigate to [http://localhost:5000](http://localhost:5000)

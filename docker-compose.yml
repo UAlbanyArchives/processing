@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+  flask1:
+    image: python:3.11.2-slim-buster
+    ports:
+      - '5000:5000'
+    volumes:
+      - '.:/code'
+    stdin_open: true
+    tty: true
+    working_dir: /code

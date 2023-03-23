@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+  flask1:
+    volumes:
+      - '..\flask_processing_app_testing\Archives:/Archives'
+      - '..\flask_processing_app_testing\automated:/automated'
+      - '..\flask_processing_app_testing\backlog:/backlog'
+      - '..\flask_processing_app_testing\ingest:/ingest'
+      - '..\flask_processing_app_testing\processing_logs:/logs'
+    command: >
+      bash -c "pip install -r requirements.txt &&
+              cp /code/.archivessnake.yml ~ &&
+              apt update &&
+              apt install imagemagick -y
+              export FLASK_DEBUG="1" &&
+              flask run --host=0.0.0.0"
