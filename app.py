@@ -1,4 +1,5 @@
 import os
+import requests
 from flask import Flask
 from flask import flash, redirect, Markup
 from flask import request
@@ -9,22 +10,16 @@ from flask import render_template
 from forms.ingest import IngestForm
 from forms.accession import AccessionForm
 from forms.derivatives import DerivativesForm
+from forms.ocr import OcrForm
+from forms.aspace import AspaceForm
 
-import subprocess
+from aspaceDAO import addDAO
+
 from datetime import datetime
-import asnake.logging as logging
-from asnake.client import ASnakeClient
+from subprocess import Popen, PIPE
 
 app = Flask(__name__)
 app.secret_key = b'_5#y73:F4T8z\n\xec]/'
-
-logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="INFO")
-client = ASnakeClient()
-
-available_collections = os.listdir("/ingest")
-available_packages = []
-for collection_packages in os.listdir("/backlog"):
-    available_packages.extend(os.listdir(os.path.join("/backlog", collection_packages)))
 
 @app.route('/')
 def index():
@@ -38,17 +33,13 @@ def ingest():
         collectionID = form.collectionID.data
         #altPath = form.altPath.data
         if not form.validate():
-            error = 'Invalid entry: ' + collectionID
-            flash(error, 'error')
-        elif not collectionID in available_collections:
-            error = f'Error: Nothing to ingest for {collectionID}. No folder in ingest path  \\\\Lincoln\\Library\\SPE_Processing\\ingest\\{collectionID}.'
-            flash(error, 'error')
+            flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-ingest-{collectionID}.log"
-            command = f"python /code/utilities/ingest.py {collectionID} &"
+            command = f"python -u /code/utilities/ingest.py {collectionID} >> {log_file} 2>&1 &"
             #print ("running command: " + command)
-            with open(log_file, 'a') as out:
-                ingest = subprocess.Popen(command, shell=True, stdout=out, stderr=out)
+            ingest = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
             success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
             flash(success_msg, 'success')
             return redirect(url_for('ingest'))
@@ -63,27 +54,16 @@ def accession():
         collectionID = form.collectionID.data
         #altPath = form.altPath.data
         if not form.validate():
-            flash(f'Invalid entry! Accession {accessionID} or Collection {collectionID} is invalid.', 'error')
-        elif not collectionID in available_collections:
-            error = f'Error: No data to accession for {collectionID}. No folder in ingest path  \\\\Lincoln\\Library\\SPE_Processing\\ingest\\{collectionID}.'
-            flash(error, 'error')
+            flash(form.errors, 'error')
         else:
-            # check if accession exists in ASpace
-            call = "repositories/2/search?page=1&aq={\"query\":{\"field\":\"identifier\", \"value\":\"" + accessionID + "\", \"jsonmodel_type\":\"field_query\"}}"
-            accessionResponse = client.get(call).json()
-            matches = len(accessionResponse["results"])
-            if matches != 1:
-                error = f'Error: Could not find accession {accessionID} in ArchivesSpace, found {matches} matching accessions.'
-                flash(error, 'error')
-            else:
-                log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-accession-{collectionID}.log"
-                command = f"python /code/utilities/ingest.py {collectionID} -a {accessionID} &"
-                #print ("running command: " + command)
-                with open(log_file, 'a') as out:
-                    accession = subprocess.Popen(command, shell=True, stdout=out, stderr=out)
-                success_msg = Markup(f'<div>Success! Packaging accession {accessionID}. Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-                flash(success_msg, 'success')
-                return redirect(url_for('accession'))
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-accession-{collectionID}.log"
+            command = f"python /code/utilities/ingest.py {collectionID} -a {accessionID} >> {log_file} 2>&1 &"
+            #print ("running command: " + command)
+            accession = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Packaging accession {accessionID}. Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('accession'))
     return render_template('accession.html', error=error)
 
 
@@ -95,12 +75,13 @@ def derivatives():
         packageID = form.packageID.data.strip()
         inputFormat = form.inputFormat.data.lower().strip()
         outputFormat = form.outputFormat.data.lower().strip()
-        subPath = form.subPath.data
+        subPath = form.subPath.data.strip()
+        resize = form.resize.data.strip()
+        density = form.density.data.strip()
+        monochrome = form.monochrome.data
 
         if not form.validate():
-            flash(f'Invalid entry! PackageID {packageID}, input format {inputFormat}, or output format {outputFormat} is invalid.', 'error')
-        elif not packageID in available_packages:
-            flash(f'Error: Package {packageID} not found in \\\\Lincoln\\Library\\SPE_Processing\\backlog.', 'error')
+            flash(form.errors, 'error')
         else:
             collectionID = packageID.split("_")[0]
             #look for matching files
@@ -110,27 +91,99 @@ def derivatives():
                     if file.lower().endswith(inputFormat.lower()):
                         ext_match = True
             if not ext_match:
-                flash(f'Error: No {inputFormat} files found in package {packageID}.')
+                flash({"Files": f'Error: No {inputFormat} files found in package {packageID}.'})
             else:
                 log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-convert-{packageID}.log"
-                command = f"python /code/utilities/convertImages.py {packageID} -i {inputFormat} -o {outputFormat} &"
-                print ("running command: " + command)
-                with open(log_file, 'a') as out:
-                    convert = subprocess.Popen(command, shell=True, stdout=out, stderr=out)
+                command = f"python -u /code/utilities/convertImages.py {packageID} -i {inputFormat} -o {outputFormat}"
+                if subPath:
+                    command = command + f" -p {subPath}"
+                if resize:
+                    command = command + f" -r {resize}"
+                if density:
+                    command = command + f" -r {density}"
+                if monochrome:
+                    command = command + f" -bw"
+                command = command + f" >> {log_file} 2>&1 &"
                 
+                print ("running command: " + command)
+                convert = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
                 success_msg = Markup(f'<div>Success! Converting {inputFormat} files in {packageID} to {outputFormat}. Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-                flash(f'Success! Creating {outputFormat.upper()}s for SIP {packageID}.', 'success')
+                flash(success_msg, 'success')
                 return redirect(url_for('derivatives'))
     return render_template('derivatives.html', error=error)
 
 
-@app.get('/ocr')
-def ocr_get():
-    return render_template('ocr.html')
+@app.route('/ocr', methods=['GET', 'POST'])
+def ocr():
+    error = None
+    if request.method == 'POST':
+        form = OcrForm(request.form)
+        packageID = form.packageID.data
+        subPath = form.subPath.data
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-ocr-{packageID}.log"
+            command = f"python -u /code/utilities/ocr.py {packageID} >> {log_file} 2>&1 &"
+            if subPath:
+                command = command.replace(">>", f"-p {subPath} >>")
+            #print ("running command: " + command)
+            ocr = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
 
-@app.get('/aspace')
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('ocr'))
+    return render_template('ocr.html', error=error)
+
+@app.route('/aspace', methods=['GET', 'POST'])
 def aspace():
-    return render_template('aspace.html')
+    error = None
+    if request.method == 'POST':
+        form = AspaceForm(request.form)
+        packageID = form.packageID.data
+        refID = form.refID.data
+        hyraxURI = form.hyraxURI.data
+
+        #validate
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-aspace-{packageID}.log"
+            
+            #Create digital object record in ASpace
+            #addDAO(refID, hyraxURI, log_file)
+
+            #Add package ID to Hyrax if not there?
+            session = requests.Session()
+            r = session.get(hyraxURI = "?format=json")
+            if r.status_code != 200:
+                raise session.exceptions.ConnectionError(hyraxURI + ": " + str(r.status_code))
+            hyraxJSON = hyraxURI = "?format=json"
+            if packageID not in r.json()["accession"]:
+                #get Hyrax login data
+                configFile = os.path.join(os.path.expanduser("~"), ".hyrax.yml")
+                with open(configFile, 'r') as stream:
+                    try:
+                        config = yaml.load(stream, Loader=yaml.Loader)
+                        print ("\tRead Config Data")
+                    except yaml.YAMLError as exc:
+                        print(exc)
+                        
+                loginPage = session.get(config["baseurl"], verify=False)
+                if loginPage.status_code != 200:
+                    raise session.exceptions.ConnectionError(config["baseurl"] + ": " + str(loginPage.status_code))
+
+
+
+
+            #Add CSV to package /metadata folder
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('aspace'))
+            
+    return render_template('aspace.html', error=error)
 
 @app.get('/package')
 def package_get():

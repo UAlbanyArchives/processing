@@ -88,7 +88,7 @@ def main(ID, path=None, accession=None):
     print ("SIP Saved!")
     
     # List files in txt for processing
-    print ("(not) Listing files for processing...")
+    #print ("(not) Listing files for processing...")
     #listFiles(ID)    
     
     if accession == None:
@@ -123,6 +123,7 @@ def main(ID, path=None, accession=None):
             print (updateAccession.text)
             print ("\tERROR " + str(updateAccession.status_code) + "! Failed to update accession: " + accessionID)
     
+    print ("Complete.")
     return SIP
 
 

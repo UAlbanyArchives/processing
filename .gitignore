@@ -8,6 +8,7 @@ __pycache__/
 
 logs/*
 .archivessnake.yml
+.hyrax.yml
 
 # Distribution / packaging
 .Python

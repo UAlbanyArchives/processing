@@ -47,22 +47,38 @@
                   book1/
                       page1.tif
                       page2.tif
-                      page3.tif
                       ...
-              metadata/
-          </div>
+              metadata/</div>
         </div>
       </div>
     </div>
 
-    <div class="mb-3 form-check">
-      <input type="checkbox" class="form-check-input" id="checkOptional"  onclick="enableOptional()">
-      <label class="form-check-label" for="checkOptional">Use subpath</label>
-    </div>
-    <div class="mb-3">
-      <label for="subPath" class="form-label">Subpath (optional)</label>
-      <input class="form-control" name="subPath" id="optional" aria-describedby="subPathHelp" disabled>
-      <div id="subPathHelp" class="form-text">Only converts files in a folder within the /masters directory.</div>
+    <div class="row mb-3">
+      <!--<div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="checkOptional"  onclick="enableOptional()">
+        <label class="form-check-label" for="checkOptional">Use subpath</label>
+      </div>-->
+      <div class="col-3">
+        <label for="subPath" class="form-label">Subpath (optional)</label>
+        <input class="form-control" name="subPath" id="optional" aria-describedby="subPathHelp">
+        <div id="subPathHelp" class="form-text">Only converts files in this folder within the /masters directory.</div>
+      </div>
+      <div class="col-3">
+        <label for="resize" class="form-label">Resize (optional)</label>
+        <input class="form-control" name="resize" aria-describedby="resizeHelp">
+        <div id="resizeHelp" class="form-text">Optionally resize argument for image conversion, sets maximum in pixels, such as '1000x1000'.</div>
+      </div>
+      <div class="col-3">
+        <label for="density" class="form-label">Density (optional)</label>
+        <input class="form-control" name="density" aria-describedby="densityHelp">
+        <div id="densityHelp" class="form-text">Optionally resolution argument for image conversion, such as '72' or '300'..</div>
+      </div>
+      <div class="col-3">
+        <div class="form-check mt-4">
+          <input type="checkbox" name="monochrome" class="form-check-input">
+          <label class="form-check-label" for="checkOptional">Convert to a monochrome image (only black and white)</label>
+        </div>
+      </div>
     </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>

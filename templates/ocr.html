@@ -3,7 +3,25 @@
 {% block title %}OCR{% endblock %}
 {% block content %}
   <h1>OCR</h1>
-  <div class="alert alert-primary" role="alert">
+  <div class="h5">
     Hey, lets OCR some PDFs!
   </div>
+
+  <form action="/ocr" method="post">
+      <div class="mb-3">
+      <label for="packageID" class="form-label">Package ID</label>
+      <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="checkSubpath"  onclick="enableSubpath()">
+      <label class="form-check-label" for="checkSubpath">Use subpath</label>
+    </div>
+    <div class="mb-3">
+      <label for="subpath" class="form-label">Sub path (optional)</label>
+      <input class="form-control" name="subPath" id="subpath" aria-describedby="subPathHelp" disabled>
+      <div id="subPathHelp" class="form-text">Only converts files in this folder within the /backlog package.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 {% endblock %}

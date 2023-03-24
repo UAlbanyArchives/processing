@@ -120,6 +120,8 @@ if args.output.lower() == "pdf":
                     if args.density:
                         cmd.append("-density")
                         cmd.append(args.density)
+                    if args.monochrome:
+                        cmd.append("-monochrome")
                     cmd.append(convertFile)
                     #print (cmd)
                     process(cmd)
@@ -168,3 +170,5 @@ else:
                         cmd.append("-monochrome") 
                     cmd.append(outputFile)
                     process(cmd)
+
+print ("Complete!")
