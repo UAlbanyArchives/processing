@@ -32,8 +32,11 @@ def validate_packageID(form, field):
         raise validators.ValidationError(f'Error: Package {field.data.strip()} not found in \\\\Lincoln\\Library\\SPE_Processing\\backlog.')
 
 def validate_refID(form, field):
+    pass
+    """
     r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + field.data.strip())
     if r.status_code != 200:
         raise validators.ValidationError(f'Invalid ASpace request. {field.data.strip()} returns HTTP {str(r.status_code)}')
     elif len(r.json()['archival_objects']) != 1:
         raise validators.ValidationError(f'Invalid ref ID. Found {str(len(r.json()["archival_objects"]))} matching archival objects.')
+    """

@@ -1,5 +1,4 @@
 import os
-import requests
 from flask import Flask
 from flask import flash, redirect, Markup
 from flask import request
@@ -14,6 +13,7 @@ from forms.ocr import OcrForm
 from forms.aspace import AspaceForm
 
 from aspaceDAO import addDAO
+from hyrax import addAccession
 
 from datetime import datetime
 from subprocess import Popen, PIPE
@@ -155,27 +155,7 @@ def aspace():
             #addDAO(refID, hyraxURI, log_file)
 
             #Add package ID to Hyrax if not there?
-            session = requests.Session()
-            r = session.get(hyraxURI = "?format=json")
-            if r.status_code != 200:
-                raise session.exceptions.ConnectionError(hyraxURI + ": " + str(r.status_code))
-            hyraxJSON = hyraxURI = "?format=json"
-            if packageID not in r.json()["accession"]:
-                #get Hyrax login data
-                configFile = os.path.join(os.path.expanduser("~"), ".hyrax.yml")
-                with open(configFile, 'r') as stream:
-                    try:
-                        config = yaml.load(stream, Loader=yaml.Loader)
-                        print ("\tRead Config Data")
-                    except yaml.YAMLError as exc:
-                        print(exc)
-                        
-                loginPage = session.get(config["baseurl"], verify=False)
-                if loginPage.status_code != 200:
-                    raise session.exceptions.ConnectionError(config["baseurl"] + ": " + str(loginPage.status_code))
-
-
-
+            addAccession(hyraxURI, packageID, log_file)            
 
             #Add CSV to package /metadata folder
 
