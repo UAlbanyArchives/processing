@@ -3,8 +3,10 @@ version: '3.1'
 services:
   flask1:
     image: processing
+    hostname: aspace-dev.library.albany.edu
+    network_mode: "host"
     ports:
-      - '5000:5000'
+      - '0.0.0.0:5000:5000'
     volumes:
       - '..\flask_processing_app_testing\Archives:/Archives'
       - '..\flask_processing_app_testing\automated:/automated'
