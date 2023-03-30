@@ -15,5 +15,6 @@ RUN ["chmod", "+x", "./gunicorn.sh"]
 RUN apt update
 RUN apt install imagemagick -y
 RUN apt install tesseract-ocr -y
+RUN apt install rsync -y
 
 ENTRYPOINT ["./gunicorn.sh"]
