@@ -60,4 +60,4 @@ def addDAO(refID, hyraxURI, log_file):
         update = client.post(resourceURI, json=resource)
         with open(log_file, "a") as f:
             f.write("\n" + str(update.status_code) + " --> Updated Resource for Export: " + resourceURI)
-            f.write("\nComplete!")
+            

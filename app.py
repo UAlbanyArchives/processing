@@ -9,12 +9,17 @@ from flask import render_template
 from forms.ingest import IngestForm
 from forms.accession import AccessionForm
 from forms.derivatives import DerivativesForm
+from forms.list import ListForm
 from forms.ocr import OcrForm
 from forms.aspace import AspaceForm
+from forms.package import PackageForm
+from forms.bulk import HyraxUploadForm, ASpaceUpdateForm
 
+from utilities.listFiles import listFiles
 from aspaceDAO import addDAO
 from hyrax import addAccession
 
+import csv
 from datetime import datetime
 from subprocess import Popen, PIPE
 
@@ -30,7 +35,7 @@ def ingest():
     error = None
     if request.method == 'POST':
         form = IngestForm(request.form)
-        collectionID = form.collectionID.data
+        collectionID = form.collectionID.data.strip()
         #altPath = form.altPath.data
         if not form.validate():
             flash(form.errors, 'error')
@@ -50,8 +55,8 @@ def accession():
     error = None
     if request.method == 'POST':
         form = AccessionForm(request.form)
-        accessionID = form.accessionID.data
-        collectionID = form.collectionID.data
+        accessionID = form.accessionID.data.strip()
+        collectionID = form.collectionID.data.strip()
         #altPath = form.altPath.data
         if not form.validate():
             flash(form.errors, 'error')
@@ -113,13 +118,29 @@ def derivatives():
                 return redirect(url_for('derivatives'))
     return render_template('derivatives.html', error=error)
 
+@app.route('/list', methods=['GET', 'POST'])
+def list():
+    error = None
+    if request.method == 'POST':
+        form = ListForm(request.form)
+        packageID = form.packageID.data.strip()
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-list-{packageID}.log"
+            listFiles(packageID, True, log_file)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('list'))
+    return render_template('list.html', error=error)
 
 @app.route('/ocr', methods=['GET', 'POST'])
 def ocr():
     error = None
     if request.method == 'POST':
         form = OcrForm(request.form)
-        packageID = form.packageID.data
+        packageID = form.packageID.data.strip()
         subPath = form.subPath.data
         if not form.validate():
             flash(form.errors, 'error')
@@ -141,33 +162,135 @@ def aspace():
     error = None
     if request.method == 'POST':
         form = AspaceForm(request.form)
-        packageID = form.packageID.data
-        refID = form.refID.data
-        hyraxURI = form.hyraxURI.data
+        packageID = form.packageID.data.strip()
+        refID = form.refID.data.strip()
+        hyraxURI = form.hyraxURI.data.strip()
 
         #validate
         if not form.validate():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-aspace-{packageID}.log"
-            
-            #Create digital object record in ASpace
-            #addDAO(refID, hyraxURI, log_file)
+            packagePath = os.path.join("/backlog", packageID.split("_")[0], packageID)
+            file_name = os.listdir(os.path.join(packagePath, "derivatives"))[0]
 
             #Add package ID to Hyrax if not there?
-            addAccession(hyraxURI, packageID, log_file)            
+            hyraxData = addAccession(hyraxURI, packageID, refID, log_file)
+            hyraxData[2] = file_name
 
-            #Add CSV to package /metadata folder
+            #Check to make sure ref_id provided matches whats in Hyrax
+            if hyraxData[7] != refID:
+                error_obj = {"Invalid_refID": [f"Provided ASpace ref ID {refID} does not match metadata in Hyrax. Object {hyraxURI} instead has ref ID of {hyraxData[7]}."]}
+                flash(error_obj, 'error')
+            else:
+                #Create digital object record in ASpace
+                addDAO(refID, hyraxURI, log_file)
 
-            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-            flash(success_msg, 'success')
-            return redirect(url_for('aspace'))
+                #Add CSV to package /metadata folder
+                with open(log_file, "a") as open_log:
+                    open_log.write("\nWriting Hyrax metadata to package...")
+                    headers = ["Type", "URIs", "File Paths", "Accession", "Collecting Area", "Collection Number", "Collection", \
+                    "ArchivesSpace ID", "Record Parents", "Title", "Description", "Date Created", "Resource Type", "License", \
+                    "Rights Statement", "Subjects", "Whole/Part", "Processing Activity", "Extent", "Language"]
+                    metadataPath = os.path.join(packagePath, "metadata")
+                    metadataFile = os.path.join(metadataPath, packageID + ".tsv")
+                    if os.path.isfile(metadataFile):
+                         flash(form.errors, 'error')
+                    else:
+                        with open(metadataFile, "w") as f:
+                            writer = csv.writer(f, delimiter='\t', lineterminator='\n')
+                            writer.writerow(headers)
+                            writer.writerow(hyraxData)
+                            f.close()
+                    open_log.write("\nComplete!")
+                    open_log.close()
+
+                success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+                flash(success_msg, 'success')
+                return redirect(url_for('aspace'))
             
     return render_template('aspace.html', error=error)
 
-@app.get('/package')
-def package_get():
-    return render_template('package.html')
+@app.route('/buildHyraxUpload', methods=['GET', 'POST'])
+def buildHyraxUpload():
+    error = None
+    if request.method == 'POST':
+        form = HyraxUploadForm(request.form)
+        packageID = form.packageID.data.strip()
+        fileLimiter = form.file.data
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-buildHyraxUpload-{packageID}.log"
+            command = f"python -u /code/utilities/buildHyraxUpload.py {packageID}"
+            if fileLimiter:
+                command = command + f" -f \"{fileLimiter.strip()}\""
+            command = command + f" >> {log_file} 2>&1 &"
+
+            #print ("running command: " + command)
+            build = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('buildHyraxUpload'))
+
+    return render_template('buildHyraxUpload.html', error=error)
+
+@app.route('/buildASpaceUpdate', methods=['GET', 'POST'])
+def buildASpaceUpdate():
+    error = None
+    if request.method == 'POST':
+        form = ASpaceUpdateForm(request.form)
+        packageID = form.packageID.data.strip()
+        fileLimiter = form.file.data
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-buildASpaceUpdate-{packageID}.log"
+            command = f"python -u /code/utilities/buildASpaceUpdate.py {packageID}"
+            if fileLimiter:
+                command = command + f" -f \"{fileLimiter.strip()}\""
+            command = command + f" >> {log_file} 2>&1 &"
+
+            #print ("running command: " + command)
+            build = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('buildASpaceUpdate'))
+
+    return render_template('buildASpaceUpdate.html', error=error)
+
+@app.route('/package', methods=['GET', 'POST'])
+def package():
+    error = None
+    if request.method == 'POST':
+        form = PackageForm(request.form)
+        packageID = form.packageID.data.strip()
+        update = form.update.data
+        noderivatives = form.noderivatives.data
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-package-{packageID}.log"
+            command = f"python -u /code/utilities/packageAIP.py {packageID}"
+            if update:
+                command = command + " --update"
+            if noderivatives:
+                command = command + " --noderivatives"
+            command = command + f" >> {log_file} 2>&1 &"
+
+            #print ("running command: " + command)
+            finalize = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('package'))
+
+    return render_template('package.html', error=error)
 
 @app.get('/logs')
 def list_logs():

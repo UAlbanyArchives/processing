@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% set active = "batch" %}
+{% block title %}Build ASpace Update{% endblock %}
+{% block content %}
+  <h1>Build ASpace Update</h1>
+  <div class="h5">
+    Hey, lets update an asInventory spreadsheet for adding new digital objects in ASpace!
+  </div>
+
+  <div class="h5">
+    <a href="https://wiki.albany.edu/display/SCA/Processing+Ingested+Digital+Files#ProcessingIngestedDigitalFiles-ArrangingDigitizedandBorn-DigitalMaterialsinArchivesSpace">Wiki documentation</a>
+  </div>
+
+  <form action="/buildASpaceUpdate" method="post">
+    <div class="mb-3">
+      <label for="packageID" class="form-label">Package ID</label>
+      <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="checkSubpath"  onclick="enableSubpath()">
+      <label class="form-check-label" for="checkSubpath">Single spreadsheet</label>
+    </div>
+    <div class="mb-3">
+      <label for="file" class="form-label">Spreadsheet file name (optional)</label>
+      <input class="form-control" name="file" id="subpath" aria-describedby="fileHelp" disabled>
+      <div id="fileHelp" class="form-text">File name of spreadsheet to be updated. If no files are listed, all will be updated.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+
+{% endblock %}

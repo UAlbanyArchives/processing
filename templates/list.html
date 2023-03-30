@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% set active = "list" %}
+{% block title %}List{% endblock %}
+{% block content %}
+  <h1>List</h1>
+  <div class="h5">
+    Hey, lets list files to help with description!
+  </div>
+
+  <div class="h5">
+    <a href="https://wiki.albany.edu/display/SCA/Processing+Ingested+Digital+Files#ProcessingIngestedDigitalFiles-ArrangingDigitizedandBorn-DigitalMaterialsinArchivesSpace">Wiki documentation</a>
+  </div>
+
+  <form action="/list" method="post">
+    <div class="mb-3">
+      <label for="packageID" class="form-label">Package ID</label>
+      <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+
+{% endblock %}

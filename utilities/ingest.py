@@ -88,8 +88,8 @@ def main(ID, path=None, accession=None):
     print ("SIP Saved!")
     
     # List files in txt for processing
-    #print ("(not) Listing files for processing...")
-    #listFiles(ID)    
+    print ("Listing files for processing...")
+    listFiles(SIP.bagID)
     
     if accession == None:
         SIP.extentLog("/automated/DigitizationExtentTracker/DigitizationExtentTracker.xlsx")

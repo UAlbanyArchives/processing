@@ -87,17 +87,17 @@ class ArchivalInformationPackage:
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate()
             if p.returncode != 0:
-                print (stdout)
-                print (stderr)
+                print (stdout.decode())
+                print (stderr.decode())
                 print ("Copy failed at " + str(datetime.now()))
                 print ("Retrying...")
                 self.copyRsync(source, destination, retry)
             else:
                 print ("Success!")
                 print("Copy completed at " + str(datetime.now()))
-                print (stdout)
+                print (stdout.decode())
                 if len(stderr) > 0:
-                    print (stderr)
+                    print (stderr.decode())
         else:
             print ("Failed to copy in 5 attempts")
             raise ValueError("Failed to copy in 5 attempts")

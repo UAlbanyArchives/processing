@@ -3,7 +3,32 @@
 {% block title %}Package{% endblock %}
 {% block content %}
   <h1>Package AIP</h1>
-  <div class="alert alert-primary" role="alert">
-    Hey, lets package an AIP!
+  <div class="h5">
+    Hey, lets finalize an AIP and send it to preservation storage!
   </div>
+
+  <form action="/package" method="post">
+    <div class="mb-3">
+      <label for="packageID" class="form-label">Package ID</label>
+      <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-3">
+        <div class="form-check">
+          <input type="checkbox" name="update" class="form-check-input" aria-describedby="updateHelp">
+          <label class="form-check-label" for="update">Update master files</label>
+        </div>
+        <div id="updateHelp" class="form-text">Package master files from the processing package instead of the files in the SIP. This is for cases where the master files were changed or deleted during processing.</div>
+      </div>
+      <div class="col-3">
+        <div class="form-check">
+          <input type="checkbox" name="noderivatives" class="form-check-input">
+          <label class="form-check-label" for="noderivatives">Ignore derivatives</label>
+        </div>
+        <div id="updateHelp" class="form-text">Will not include derivatives in the final package. This is to avoid duplication in cases where masters, are the same as derivatives.</div>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 {% endblock %}

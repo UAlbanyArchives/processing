@@ -30,13 +30,15 @@ def validate_packageID(form, field):
         raise validators.ValidationError('Invalid package ID. Does not start with UAlbany mss ID (apap, ger, mss, ua).')
     elif not field.data.strip() in available_packages:
         raise validators.ValidationError(f'Error: Package {field.data.strip()} not found in \\\\Lincoln\\Library\\SPE_Processing\\backlog.')
+    packageDirs = os.listdir(os.path.join("/backlog", field.data.split("_")[0], field.data.strip()))
+    subfolders = ["derivatives", "masters", "metadata"]
+    for subfolder in subfolders:
+        if not subfolder in packageDirs:
+            raise validators.ValidationError(f'Invalid package. Missing {subfolder} directory.')
 
 def validate_refID(form, field):
-    pass
-    """
     r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + field.data.strip())
     if r.status_code != 200:
         raise validators.ValidationError(f'Invalid ASpace request. {field.data.strip()} returns HTTP {str(r.status_code)}')
     elif len(r.json()['archival_objects']) != 1:
         raise validators.ValidationError(f'Invalid ref ID. Found {str(len(r.json()["archival_objects"]))} matching archival objects.')
-    """

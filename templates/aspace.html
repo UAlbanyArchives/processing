@@ -2,16 +2,16 @@
 {% set active = "aspace" %}
 {% block title %}Connect to ASpace{% endblock %}
 {% block content %}
-  <h1>Connect DAO to ASpace</h1>
+  <h1>Connect a single DAO to ASpace</h1>
   <div class="h5">
-    Hey, lets connect the object in Hyrax to ASpace with a single digital object record!
+    Hey, lets connect a single object in Hyrax to ASpace with a digital object record!
   </div>
 
   <form action="/aspace" method="post">
     <div class="mb-3">
       <label for="packageID" class="form-label">Package ID</label>
       <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
-      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as ua500_7wHDAkMWjWD9LBqk4XkDTR apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
     </div>
     <div class="mb-3">
       <label for="refID" class="form-label">ASpace ref ID</label>
@@ -23,6 +23,7 @@
       <input type="hyraxURI" class="form-control" name="hyraxURI" id="hyraxURI" aria-describedby="hyraxURIHelp">
       <div id="hyraxURIHelp" class="form-text">The link to the item in Hyrax, such as https://archives.albany.edu/concern/daos/9593vc997 or https://archives.albany.edu/concern/daos/q811m315v?locale=en.</div>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary" aria-describedby="btnWarning">Submit</button>
+    <div id="btnWarning" class="form-text">This step is not run in the background and may take some time to process.</div>
   </form>
 {% endblock %}

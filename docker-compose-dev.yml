@@ -15,5 +15,6 @@ services:
               apt update &&
               apt install imagemagick -y &&
               apt install tesseract-ocr -y &&
+              apt install rsync &&
               export FLASK_DEBUG="1" &&
               flask run --host=0.0.0.0"
