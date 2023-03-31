@@ -22,32 +22,36 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'ingest' }}" aria-current="{{'page' if active == 'ingest' }}" href="/ingest">Ingest</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'accession' }}" aria-current="{{'page' if active == 'accession' }}" href="/accession">Accession</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {{'active' if active == 'ingest' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Ingest
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/ingest">Ingest Digitized Materials</a>
+                <a class="dropdown-item" href="/accession">Accession Born-Digital Materials</a>
+              </div>
             </li>
             <li class="nav-item">
               <a class="nav-link {{'active' if active == 'derivatives' }}" aria-current="{{'page' if active == 'derivatives' }}" href="/derivatives">Derivatives</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'list' }}" aria-current="{{'page' if active == 'list' }}" href="/list">List</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link {{'active' if active == 'ocr' }}" aria-current="{{'page' if active == 'ocr' }}" href="/ocr">OCR</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="https://archives.albany.edu/concern/daos/new" target="_blank">Hyrax upload</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'aspace' }}" aria-current="{{'page' if active == 'aspace' }}" href="/aspace">Connect to ASpace</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {{'active' if active == 'single' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Single Upload
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="https://archives.albany.edu/concern/daos/new" target="_blank">Hyrax upload</a>
+                <a class="dropdown-item" href="/aspace">Connect to ASpace</a>
+              </div>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle {{'active' if active == 'batch' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Batch Upload
               </a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/list">List Files</a>
                 <a class="dropdown-item" href="/buildHyraxUpload">Build Hyrax Upload Sheet</a>
                 <a class="dropdown-item" href="/buildASpaceUpdate">Update asInventory Sheet</a>
               </div>

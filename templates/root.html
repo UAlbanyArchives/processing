@@ -1,17 +1,218 @@
 {% extends "layout.html" %}
-{% block title %}Ingest{% endblock %}
+{% block title %}Processing{% endblock %}
 {% block content %}
   <h1>Processing Digital Materials</h1>
-  <ol>
-    <li>
-        <a href="/ingest">Ingest a digitized object</a> or <a href="/accession">Accession born-digital records</a>
-    </li>
-    <li><a href="/derivatives">Create derivative copies</a></li>
-    <li><a href="/list">List files for description</a></li>
-    <li><a href="/ocr">OCR PDFs</a></li>
-    <li><a href="https://archives.albany.edu/concern/daos/new" target="_blank">Upload to Hyrax</a></li>
-    <li><a href="/aspace">Connect to ArchivesSpace</a></li>
-    <li><a href="/package">Finalize into an AIP</a></li>
-  </ol>
-  <p><span style="font-size:1.2rem;">🡆</span> <a href="/logs">View logs</a></p>
+  <h4>
+    <small class="text-muted">Manage digital materials in a standard way, automate common steps, but manually edit files</small>
+  </h4>
+
+  <p></p>
+
+<ol>
+  <h3><li>Ingesting digital materials</li></h3>
+
+  <ul>
+      <li>Place files you want to ingest in the ingest folder in a folder named with the collection ID.</li>
+      <li>The ingest folder is: <span class="code">\\Lincoln\Library\SPE_Processing\ingest</span></li>
+      <li>Files here can have subfolders and any structure that is useful for preserving any meaningful order.</li>
+  </ul>
+
+  <div class="code">ingest/
+    ├─ apap101/
+    │  ├─ minutes.docx
+    │  ├─ report.pdf
+    ├─ ua950.012/
+    │  ├─ Issue1/
+    │  │  ├─ page1.tif
+    │  │  ├─ page2.tif
+    │  │  │  ...   
+  </div>
+
+    <ul class="mb-3">
+      <li>Born-digital files have not yet been accessioned and must be documented by an <a href="https://aspace.library.albany.edu/accessions">ArchivesSpace accession record</a>.
+        <ul>
+          <li>Once an accession record with at least a Content Description, Dates, and Related Resource has been created, the <a href="/accession">accession tab</a> will ingest the files while automatically documenting the package in the accession record.</li>
+        </ul>
+      </li>
+      <li>Digitized materials have already been accessioned and processed, so they just need to be <a href="/ingest">ingested into the backlog or processing storage.</a>
+        <ul>
+          <li>Digitized files that are not accessioned will be logged in the <span class="code">DigitizationExtentTracker.xlsx</span> at <span class="code">\\Lincoln\Library\SPE_Automated\DigitizationExtentTracker</span> so we can track the size and quantity of what we're digitizing.</li>
+        </ul>
+      </li>
+    </ul>
+
+
+  <h3><li>"Backlog" or storage during processing</li></h3>
+
+    <ul>
+      <li>An ingest or accession creates two packages for the data.
+        <ul>
+          <li>One read-only copy will be created in the SIP directory at <span class="code">\\Lincoln\Masters\Archives\SIP</span>.</li>
+          <li>A second, working copy will be created in the backlog directory at <span class="code">\\Lincoln\Library\SPE_Processing\backlog</span>.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="code">AIP/
+├─ ...
+SIP/
+    ├─ apap101/
+    │  ├─ apap101_XGpvL2wFQxfA28no8pC3Mk
+    │  │  ├─ data/   
+    │  │  │  ├─ Issue1/
+    │  │  │  │  ├─ page1.tif
+    │  │  │  │  ├─ page2.tif
+    │  │  │  ... 
+    │  │  ├─ bag-info.txt
+    │  │  ├─ bagit.txt
+    │  │  ├─ manifest-sha256.txt
+    │  │  ├─ ...
+backlog/
+    ├─ apap101/
+    │  ├─ apap101_XGpvL2wFQxfA28no8pC3Mk
+    │  ├─ derivatives/
+    │  ├─ masters/
+    │  │  │  ├─ Issue1/
+    │  │  │  │  ├─ page1.tif
+    │  │  │  │  ├─ page2.tif
+    │  │  │  │  ...
+    │  ├─ metadata/ 
+  </div>
+
+  <h3><li>Processing digital materials</li></h3>
+
+    <ul>
+      <li>You can manually edit, combine, or delete files in the processing package in <span class="code">\\Lincoln\Library\SPE_Processing\backlog</span>.</li>
+      <li>Generally, keep original files in the <span class="code">masters</span> directory and make copies and edit in the <span class="code">derivatives</span> directory.
+        <ul>
+          <li>By default, the files in the masters directory are for your convenience and will not be preserved. Instead we usually keep the masters files in <span class="code">SIP</span> to ensure nothing gets lost duing processing.</li>
+          <li>There is an option during final packaging to keep the masters files in the processing package instead of files in the <span class="code">SIP</span>. This typically for born-digital materials when certain files may not be retained after appraisal.</li>
+        </ul>
+      </li>
+      <li>The <a href="/derivatives">derivatives</a> tab automatically creates derivative access files.
+        <ul>
+          <li>This currently only works for images and PDFs but we can add A/V converstions.</li>
+          <li>JPG and PNG derivatives create single derivative images for each file.</li>
+          <li>PDF derivatives create a single PDF for all image files in a folder.</li>
+        </ul>
+      </li>
+      <li>The <a href="/ocr">OCR</a> tab will automatically OCR and embed text in PDFs.</li>
+    </ul>
+
+    <div class="code">backlog/
+    ├─ apap101/
+    │  ├─ apap101_XGpvL2wFQxfA28no8pC3Mk
+    │  │  ├─ derivatives/
+    │  │  │  ├─ Issue1.pdf
+    │  │  │  ...
+    │  │  ├─ masters/
+    │  │  │  ├─ Issue1/
+    │  │  │  │  ├─ page1.tif
+    │  │  │  │  ├─ page2.tif
+    │  │  │  │  ...
+    │  │  │  ...
+    │  │  ├─ metadata/ 
+    ├─ ua395/
+    │  ├─ ua395_NYnDucGs3mRnDLTidmgYak
+    │  │  ├─ derivatives/
+    │  │  │  ├─ photos/
+    │  │  │  │  ├─ uptown_campus.jpg
+    │  │  │  │  ├─ podium_construction.jpg
+    │  │  │  ...
+    │  │  ├─ masters/
+    │  │  │  ├─ photos/
+    │  │  │  │  ├─ uptown_campus.tif
+    │  │  │  │  ├─ podium_construction.tif
+    │  │  │  ...
+    │  │  ├─ metadata/ 
+  </div>
+
+  <h3><li>Describing materials in ArchivesSpace and Uploading to Hyrax</li></h3>
+
+    <h5>Single file upload</h5>
+
+      <ul class="mb-3">
+        <li>Single files, such as PDF publications or scans of folders can be directly <a href="https://archives.albany.edu/concern/daos/new" target="_blank">uploaded into Hyrax</a>.</li>
+        <li>The <a href="/aspace">Connect to ASpace</a> tab will describe single files in ArchivesSpace, no spreadsheets needed!</li>
+      </ul>
+
+    <h5>Batch upload</h5>
+
+      <ul>
+        <li>Describing digital materials for bulk upload uses the same <a href="https://github.com/UAlbanyArchives/asInventory">asInventory</a> spreadsheets we use for data entry.</li>
+        <li>Keep the speadsheets used during processing in the <span class="code">metadata</span> folder within the processing package.</li>
+        <li>Processing packages include <span class="code">derivatives.txt</span> and <span class="code">masters.txt</span> files that list file names for easy copying and pasting into an asInventory spreadsheet.</li>
+        <li>You can re-generate these lists after creating or editing derivatives using the <a href="/list">List tab</a>.</li>
+      </ul>
+
+      <img class="m-3" width="900px" src="/static/daos.png" />
+
+      <ol class="mb-3">
+        <li>List all files in the last column of an asInventory spreadsheet.</li>
+        <li>Use the <a href="buildHyraxUpload">Build Hyrax Upload</a> tab to prepare a bulk upload spreadsheet for Hyrax.
+          <ul>
+            <li>Add Resource Type and either Licenses or Rights Statements to all objects in the Hyrax upload .tsv file</li>
+          </ul>
+        </li>
+        <li><a href="https://wiki.albany.edu/display/SCA/Batch+Upload+to+Hyrax">Bulk upload into Hyrax</a> still requires the command line and server access.</li>
+        <li>Use the <a href="buildASpaceUpdate">Build ASpace Update</a> tab to update the asInventory spreadsheet with the Hyrax URIs after files have been uploaded to Hryax on the command line.</li>
+        <li>Use <a href="https://github.com/UAlbanyArchives/asInventory">asInventory</a> to add digital object records in ArchivesSpace that will link to the Hyrax URIs.</li>
+      </ol>
+
+  <h3><li>Packaging into permanent preservation storage</li></h3>
+
+    <ul>
+      <li>Once processing is complete and all files have been uploaded into Hyrax and described in ArchivesSpace, finalize everything by packaging it into an "AIP" in permanent preservation storage.</li>
+      <li>This step is needed after both single file and bulk uploads.</li>
+      <li>Use the <a href="/package">Package AIP</a> tab to combine both the <span class="code">SIP</span> and the processing package into an <span class="code">AIP</span>.
+        <ul>
+          <li>The Update master files option will keep the master files in the processing package rather than the files in the <span class="code">SIP</span> that were originally ingested. You should only do this is master files were appraised during processing and some should not be kept.</li>
+          <li>The Ignore derivatives option will not include derivatives in the <span class="code">AIP</span>. This is for cases when you create derivatives, but they are not necessary to keep.</li>
+        </ul>
+      </li>
+    </ul>
+
+  <div class="code">Archives/
+   ├─ AIP/
+   │  ├─ apap101/
+   │  │  ├─ apap101_XGpvL2wFQxfA28no8pC3Mk
+   │  │  │  ├─ data/
+   │  │  │  │  ├─ derivatives/
+   │  │  │  │  │  ├─ Issue1.pdf
+   │  │  │  │  │  ...
+   │  │  │  │  ├─ masters/
+   │  │  │  │  │  ├─ Issue1/
+   │  │  │  │  │  │  ├─ page1.tif
+   │  │  │  │  │  │  ├─ page2.tif
+   │  │  │  │  │  │  ...
+   │  │  │  │  │  ...
+   │  │  │  │  ├─ metadata/ 
+   │  │  │  ├─ bag-info.txt
+   │  │  │  ├─ bagit.txt
+   │  │  │  ├─ manifest-sha256.txt
+   │  │  │  ├─ ...
+   │  ├─ ua395/
+   │  │  ├─ ua395_NYnDucGs3mRnDLTidmgYak
+   │  │  │  ├─ data/   
+   │  │  │  │  ├─ derivatives/
+   │  │  │  │  │  ├─ photos/
+   │  │  │  │  │  │  ├─ uptown_campus.jpg
+   │  │  │  │  │  │  ├─ podium_construction.jpg
+   │  │  │  │  │  ...
+   │  │  │  │  ├─ masters/
+   │  │  │  │  │  ├─ photos/
+   │  │  │  │  │  │  ├─ uptown_campus.tif
+   │  │  │  │  │  │  ├─ podium_construction.tif
+   │  │  │  │  │  ...
+   │  │  │  │  ├─ metadata/
+   │  │  │  ├─ bag-info.txt
+   │  │  │  ├─ bagit.txt
+   │  │  │  ├─ manifest-sha256.txt
+   │  │  │  ├─ ...
+   ├─ SIP/
+   │  ...
+  </div>
+
+</ol>
+
 {% endblock %}

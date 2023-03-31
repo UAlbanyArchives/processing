@@ -24,3 +24,54 @@ a[target="_blank"]:after {
 .dropdown-item.focus, .dropdown-item:focus {
 	border-color: #46166B !important;
 }
+
+.code {
+	white-space: pre;
+	font: 14px Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;
+  color: #52595d;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  padding: 3px 5px;
+  display: inline-block;
+}
+
+div.code {
+	white-space: pre;
+	font: 14px Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;
+  color: #52595d;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  padding: 15px 20px;
+  display: inline-block;
+  margin: 0px;
+  margin-left:8rem;
+  margin-bottom:1rem;
+  margin-top:1rem;
+}
+
+#footer nav {
+  background-color: #e9ecef;
+  padding: 1rem 2rem;
+  border-radius: 5px;
+}
+#footer nav ol.row {
+  width: 100%;
+}
+#footer a {
+  color: #642a90;
+}
+#footer a:hover {
+  color: #006c68;
+}

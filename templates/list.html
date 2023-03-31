@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
-{% set active = "list" %}
+{% set active = "batch" %}
 {% block title %}List{% endblock %}
 {% block content %}
-  <h1>List</h1>
+  <h1>List Files</h1>
   <div class="h5">
-    Hey, lets list files to help with description!
+    Hey, lets list files to help with description for batch uploads!
   </div>
 
   <div class="h5">
@@ -18,6 +18,7 @@
       <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
+    <div id="btnWarning" class="col-12 col-lg-8 col-xl-5 alert alert-info form-text" role="alert">This step is not run in the background but is usually fast so you won't notice.</div>
   </form>
 
 

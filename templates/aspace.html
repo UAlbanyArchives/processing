@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% set active = "aspace" %}
+{% set active = "single" %}
 {% block title %}Connect to ASpace{% endblock %}
 {% block content %}
   <h1>Connect a single DAO to ASpace</h1>
@@ -24,6 +24,6 @@
       <div id="hyraxURIHelp" class="form-text">The link to the item in Hyrax, such as https://archives.albany.edu/concern/daos/9593vc997 or https://archives.albany.edu/concern/daos/q811m315v?locale=en.</div>
     </div>
     <button type="submit" class="btn btn-primary" aria-describedby="btnWarning">Submit</button>
-    <div id="btnWarning" class="form-text">This step is not run in the background and may take some time to process.</div>
+    <div id="btnWarning" class="col-12 col-lg-8 col-xl-5 alert alert-warning form-text" role="alert">⚠ This step is not run in the background and may take some time to process.</div>
   </form>
 {% endblock %}
