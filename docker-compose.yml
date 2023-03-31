@@ -8,11 +8,11 @@ services:
     ports:
       - '0.0.0.0:5000:5000'
     volumes:
-      - '..\flask_processing_app_testing\Archives:/Archives'
-      - '..\flask_processing_app_testing\automated:/automated'
-      - '..\flask_processing_app_testing\backlog:/backlog'
-      - '..\flask_processing_app_testing\ingest:/ingest'
-      - '..\flask_processing_app_testing\processing_logs:/logs'
+      - '/media/Library/SPE_Processing/processing_sandbox/Archives:/Archives'
+      - '/media/Library/SPE_Processing/processing_sandbox/automated:/automated'
+      - '/media/Library/SPE_Processing/processing_sandbox/backlog:/backlog'
+      - '/media/Library/SPE_Processing/processing_sandbox/ingest:/ingest'
+      - '/media/Library/SPE_Processing/processing_sandbox/logs:/logs'
     tty: true
     stdin_open: true
     build: .
