@@ -29,7 +29,7 @@ def single(field):
 def addAccession(hyraxURI, packageID, refID, log_file):
     #print (f"trying {hyraxURI}")
     session = requests.Session()
-    r = session.get(hyraxURI + ".json")
+    r = session.get(hyraxURI + ".json", verify=False)
     #print ("done")
     check_response(r, "Connecting to Hyrax", log_file)
 
@@ -73,7 +73,7 @@ def addAccession(hyraxURI, packageID, refID, log_file):
             signin = session.post(config["baseurl"], data=loginData, verify=False)
             check_response(signin, "Logging into Hyrax", log_file)
 
-            editForm = session.get(hyraxURI + "/edit", headers={'Cache-Control': 'no-cache'})
+            editForm = session.get(hyraxURI + "/edit", headers={'Cache-Control': 'no-cache'}, verify=False)
             check_response(editForm, "Reading Hyrax edit form", log_file)
             
             editSoup = BeautifulSoup(editForm.text, 'html.parser')

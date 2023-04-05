@@ -14,7 +14,8 @@ def strip_params(data):
 
 def validate_hyraxURI(form, field):
     if not field.data.lower().startswith("https://archives.albany.edu/concern/daos/"):
-        raise validators.ValidationError(f'Invalid Hyrax URI. Is not a UAlbany Hyrax URL.')
+        if not field.data.lower().startswith("https://lib-espy-ws-d101.its.albany.edu/concern/daos/"): 
+            raise validators.ValidationError(f'Invalid Hyrax URI. Is not a UAlbany Hyrax URL.')
 
 def validate_singleFile(form, field):
     packagePath = os.path.join("/backlog", field.data.strip().split("_")[0], field.data.strip())
