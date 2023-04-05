@@ -10,6 +10,8 @@ COPY ./requirements.txt /code/requirements.txt
 WORKDIR /code
 RUN pip install -r requirements.txt
 
+COPY .archivessnake.yml /root
+COPY .hyrax.yml /root
 COPY . /code
 RUN ["chmod", "+x", "./gunicorn.sh"]
 RUN apt update
