@@ -25,4 +25,4 @@ def validate_singleFile(form, field):
 class AspaceForm(Form):
     packageID = StringField('Package ID', [validators.Length(min=28, max=32), validate_packageID, validate_singleFile])
     refID = StringField('Ref ID', [validators.Length(min=32, max=32), validate_refID])
-    hyraxURI = StringField('Hyrax URI', [validators.Length(min=50, max=60), validate_hyraxURI], [strip_params])
+    hyraxURI = StringField('Hyrax URI', [validators.Length(min=50, max=100), validate_hyraxURI], [strip_params])
