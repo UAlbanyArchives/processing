@@ -2,6 +2,7 @@ import os
 import csv
 import openpyxl
 import argparse
+from datetime import datetime
 
 argParse = argparse.ArgumentParser()
 argParse.add_argument("package", help="Package ID in Processing directory.")
@@ -18,11 +19,11 @@ masters = os.path.join(package, "masters")
 metadata = os.path.join(package, "metadata")
 
 if not os.path.isdir(package) or not os.path.isdir(derivatives) or not os.path.isdir(metadata):
-    raise ("ERROR: " + package + " is not a valid package.")
+    raise ValueError("ERROR: " + package + " is not a valid package.")
 
 hyraxImport = os.path.join(metadata, args.package + ".tsv")
 if not os.path.isfile(hyraxImport):
-    raise ("ERROR: " + hyraxImport + " is not a valid hryax import TSV.")
+    raise ValueError("ERROR: " + hyraxImport + " is missing or not a valid hryax import TSV.")
     
 for sheetFile in os.listdir(metadata):
     if sheetFile.lower().endswith(".xlsx"):
@@ -88,3 +89,6 @@ for sheetFile in os.listdir(metadata):
                                     if match == False:
                                         print ("ERROR: failed to find matching refID " + refID + " in hyrax upload file " + hyraxImport)
             wb.save(filename=os.path.join(metadata, "updated_" + sheetFile))
+
+print ("Complete!")
+print (f"Finished at {datetime.now()}")

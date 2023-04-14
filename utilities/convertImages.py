@@ -2,6 +2,7 @@ import os
 import shutil
 import img2pdf
 import argparse
+from datetime import datetime
 from subprocess import Popen, PIPE
 
 processingDir = "/backlog"
@@ -172,3 +173,4 @@ else:
                     process(cmd)
 
 print ("Complete!")
+print (f"Finished at {datetime.now()}")

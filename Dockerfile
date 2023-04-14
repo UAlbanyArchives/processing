@@ -2,7 +2,7 @@ FROM python:3.11.2-slim-buster
 MAINTAINER Gregory Wiedeman gwiedeman@albany.edu
 
 ENV FLASK_APP=app
-#ENV FLASK_DEBUG=1
+ENV TZ=America/New_York
 
 EXPOSE 5000
 
@@ -15,6 +15,8 @@ COPY .hyrax.yml /root
 COPY . /code
 RUN ["chmod", "+x", "./gunicorn.sh"]
 RUN apt update
+RUN apt install tzdata -y
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt install imagemagick -y
 RUN apt install tesseract-ocr -y
 RUN apt install rsync -y

@@ -1,6 +1,7 @@
 import os
 import argparse
 from tqdm import tqdm
+from datetime import datetime
 from subprocess import Popen, PIPE
 
 processingDir = "/backlog"
@@ -28,9 +29,9 @@ def process(cmd):
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     if len(stdout) > 0:
-        print (stdout)
+        print (stdout.decode())
     if len(stderr) > 0:
-        print (stderr)
+        print (stderr.decode())
 
 
 
@@ -41,9 +42,12 @@ if args.path:
 else:
     ocrPath = derivatives
 
+fileCount = 0
+
 for root, dirs, files in os.walk(ocrPath):
     for file in tqdm(files):
         if file.lower().endswith(".pdf"):
+            fileCount += 1
             #cmd = ["ocrmypdf", "--deskew", "--clean"]
             cmd = ["ocrmypdf", "--deskew"]
             filepath = os.path.join(root, file)
@@ -52,5 +56,11 @@ for root, dirs, files in os.walk(ocrPath):
 
             #print ("\n\n")
             #print (" ".join(cmd))
-            print ("processing " + file + "...")
+            print ("\n--> processing " + file + "...")
             process(cmd)
+
+if fileCount == 0:
+    print (f"Error: No PDF files found in derivatives folder in package {args.package}")
+else:
+    print ("Complete!")
+    print (f"Finished at {datetime.now()}")

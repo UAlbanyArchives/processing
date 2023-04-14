@@ -5,6 +5,8 @@ services:
     image: python:3.11.2-slim-buster
     ports:
       - '5000:5000'
+    environment:
+      - TZ=America/New_York
     volumes:
       - '.:/code'
       - '..\flask_processing_app_testing\Archives:/Archives'
@@ -18,8 +20,10 @@ services:
               cp /code/.archivessnake.yml ~ &&
               cp /code/.hyrax.yml ~ &&
               apt update &&
+              apt install tzdata -y &&
               apt install imagemagick -y &&
               apt install tesseract-ocr -y &&
               apt install rsync -y &&
+              ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &&
               export FLASK_DEBUG="1" &&
               flask run --host=0.0.0.0"

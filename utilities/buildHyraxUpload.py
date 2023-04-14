@@ -3,6 +3,7 @@ import csv
 import requests
 import argparse
 import openpyxl
+from datetime import datetime
 
 argParse = argparse.ArgumentParser()
 argParse.add_argument("package", help="Package ID in Processing directory.")
@@ -51,10 +52,12 @@ def getParents(obj, parentList, level, objURI):
             parentList.append(parentRefID)
             getParents(child, parentList, level, objURI)
 
+sheetCount = 0
 warningList = [] 
 for sheetFile in os.listdir(metadata):
     if sheetFile.lower().endswith(".xlsx") and not sheetFile.lower().startswith("~$"):
         if not args.file or args.file.lower() == sheetFile.lower():
+            sheetCount += 1
             print ("Reading sheet: " + sheetFile)
             sheetPath = os.path.join(metadata, sheetFile)
             wb = openpyxl.load_workbook(filename=sheetPath, read_only=True)
@@ -146,3 +149,9 @@ outfile.close()
 if len(warningList) > 0:
     print ("WARNING: the following files were not found in package:")
     print ("\t" + "\n\t".join(warningList))
+
+if sheetCount == 0:
+    print ("Error: No asInventory spreadsheet found. Could not build Hyrax upload sheet.")
+else:
+    print ("Complete!")
+    print (f"Finished at {datetime.now()}")

@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import bagit
+from datetime import datetime
 from listFiles import listFiles
 from packages.SIP import SubmissionInformationPackage
 
@@ -123,7 +124,8 @@ def main(ID, path=None, accession=None):
             print (updateAccession.text)
             print ("\tERROR " + str(updateAccession.status_code) + "! Failed to update accession: " + accessionID)
     
-    print ("Complete.")
+    print ("Complete!")
+    print (f"Finished at {datetime.now()}")
     return SIP
 
 
