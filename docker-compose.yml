@@ -4,7 +4,7 @@ services:
   flask1:
     image: processing
     hostname: aspace-dev.library.albany.edu
-    #network_mode: "host"
+    network_mode: "host"
     ports:
       - '0.0.0.0:5000:5000'
     volumes:
