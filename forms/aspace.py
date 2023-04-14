@@ -20,8 +20,8 @@ def validate_hyraxURI(form, field):
 def validate_singleFile(form, field):
     packagePath = os.path.join("/backlog", field.data.strip().split("_")[0], field.data.strip())
     files = os.listdir(os.path.join(packagePath, "derivatives"))
-    if len(files) != 1:
-        raise validators.ValidationError(f'Expected single file in the derivatives directory. This step is for single file uploads only.')
+    if len(files) > 10:
+        raise validators.ValidationError(f'There are more than 10 files in the derivatives directory. This step is for individual file uploads only.')
 
 class AspaceForm(Form):
     packageID = StringField('Package ID', [validators.Length(min=28, max=32), validate_packageID, validate_singleFile])
