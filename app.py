@@ -203,6 +203,7 @@ def aspace():
                             writer.writerow(hyraxData)
                             f.close()
                     open_log.write("\nComplete!")
+                    open_log.write(f"\nFinished at {datetime.now()}")
                     open_log.close()
 
                 success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
