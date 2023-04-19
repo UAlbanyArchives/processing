@@ -99,7 +99,7 @@ if args.output.lower() == "pdf":
         pageList = []
         outputPath = os.path.join(relPath, newFilename + ".pdf")
         if args.input.lower() == "pdf":
-            for inputFile in sorted(os.listdir(folder)):
+            for inputFile in os.listdir(folder):
                 if inputFile.lower().endswith(format1):
                     pageList.append("\'" + os.path.join(folder, inputFile) + "\'")
             cmd = [pdfCmd[0], " ".join(pageList), pdfCmd[1] + "\'" + outputPath + "\'"]
@@ -110,7 +110,7 @@ if args.output.lower() == "pdf":
             convertDir = os.path.join(package, "converting")
             if not os.path.isdir(convertDir):
                 os.mkdir(convertDir)
-            for inputFile in os.listdir(folder):
+            for inputFile in sorted(os.listdir(folder)):
                 if inputFile.lower().endswith(format1) or inputFile.lower().endswith(format2):
                     convertFile = os.path.join(convertDir, os.path.splitext(inputFile)[0] + ".jpg")
                     print ("compressing " + inputFile + "...")
@@ -135,7 +135,7 @@ if args.output.lower() == "pdf":
                 f = open(outputPath, "wb")
                 f.write(img2pdf.convert(pageList))
                 f.close()
-            #shutil.rmtree(convertDir)
+            shutil.rmtree(convertDir)
             
         
 else:
