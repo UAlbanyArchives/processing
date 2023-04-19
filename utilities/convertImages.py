@@ -99,7 +99,7 @@ if args.output.lower() == "pdf":
         pageList = []
         outputPath = os.path.join(relPath, newFilename + ".pdf")
         if args.input.lower() == "pdf":
-            for inputFile in os.listdir(folder):
+            for inputFile in sorted(os.listdir(folder)):
                 if inputFile.lower().endswith(format1):
                     pageList.append("\'" + os.path.join(folder, inputFile) + "\'")
             cmd = [pdfCmd[0], " ".join(pageList), pdfCmd[1] + "\'" + outputPath + "\'"]
