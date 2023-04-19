@@ -42,9 +42,9 @@ def process(cmd):
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     if len(stdout) > 0:
-        print (stdout)
+        print (stdout.decode())
     if len(stderr) > 0:
-        print (stderr)
+        print (stderr.decode())
 
 for path in dirList:
     if not os.path.isdir(path):
@@ -135,7 +135,7 @@ if args.output.lower() == "pdf":
                 f = open(outputPath, "wb")
                 f.write(img2pdf.convert(pageList))
                 f.close()
-            shutil.rmtree(convertDir)
+            #shutil.rmtree(convertDir)
             
         
 else:
