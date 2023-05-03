@@ -15,4 +15,5 @@ services:
       - '/media/Library/SPE_Processing/processing_sandbox/logs:/logs'
     tty: true
     stdin_open: true
+    restart: always
     build: .
