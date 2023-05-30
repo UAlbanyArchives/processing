@@ -19,7 +19,7 @@ RUN apt install apt-transport-https gnupg wget aptitude gcc -y
 RUN echo 'deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/buster/ buster main' >> /etc/apt/sources.list
 RUN apt update -oAcquire::AllowInsecureRepositories=true
 RUN apt install notesalexp-keyring -oAcquire::AllowInsecureRepositories=true -y
-RUN wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add - &&
+RUN wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add -
 RUN apt update
 RUN aptitude install tesseract-ocr -y
 
