@@ -32,6 +32,7 @@ def process(cmd):
         print (stdout.decode())
     if len(stderr) > 0:
         print (stderr.decode())
+    return p.returncode
 
 
 
@@ -44,6 +45,7 @@ else:
 
 fileCount = 0
 
+errors = False
 for root, dirs, files in os.walk(ocrPath):
     for file in tqdm(files):
         if file.lower().endswith(".pdf"):
@@ -57,10 +59,14 @@ for root, dirs, files in os.walk(ocrPath):
             #print ("\n\n")
             #print (" ".join(cmd))
             print ("\n--> processing " + file + "...")
-            process(cmd)
+            resp = process(cmd)
+            if resp != 0:
+                errors = True
+                raise ValueError(f'Error processing file {file}')
+
 
 if fileCount == 0:
     print (f"Error: No PDF files found in derivatives folder in package {args.package}")
-else:
+elif errors == False:
     print ("Complete!")
     print (f"Finished at {datetime.now()}")
