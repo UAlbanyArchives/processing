@@ -1,6 +1,7 @@
 import os
 import argparse
-from tqdm import tqdm
+from PIL import Image
+from PyPDF2 import PdfReader, PdfWriter
 from datetime import datetime
 from subprocess import Popen, PIPE
 
@@ -35,7 +36,6 @@ def process(cmd):
     return p.returncode
 
 
-
 if args.path:
     ocrPath = os.path.join(derivatives, os.path.normpath(args.path))
     if not os.path.isdir(derivatives):
@@ -43,30 +43,82 @@ if args.path:
 else:
     ocrPath = derivatives
 
-fileCount = 0
-
-errors = False
+# Check if there are any files
+fileTotal = 0
 for root, dirs, files in os.walk(ocrPath):
-    for file in tqdm(files):
+    for file in files:
+        if file.lower().endswith(".pdf"):
+            fileTotal += 1
+if fileTotal == 0:
+    raise ValueError(f"Error: No PDF files found in derivatives folder in package {args.package}")
+
+# Set up temp folder to extract images to
+convertDir = os.path.join(package, "converting-ocr")
+if not os.path.isdir(convertDir):
+    os.mkdir(convertDir)
+
+fileCount = 0
+for root, dirs, files in os.walk(ocrPath):
+    for file in files:
         if file.lower().endswith(".pdf"):
             fileCount += 1
-            #cmd = ["ocrmypdf", "--deskew", "--clean"]
-            cmd = ["ocrmypdf", "--deskew"]
             filepath = os.path.join(root, file)
-            cmd.append(filepath)
-            cmd.append(filepath)
+            print (f"Processing {file} (file {fileCount} of {fileTotal})...")
 
-            #print ("\n\n")
-            #print (" ".join(cmd))
-            print ("\n--> processing " + file + "...")
-            resp = process(cmd)
-            if resp != 0:
-                errors = True
-                raise ValueError(f'Error processing file {file}')
+            # convert to images
+            pageOrder = []
+            pdf_reader = PdfReader(filepath)
+            page_count = 0
+            page_total = len(pdf_reader.pages)
+            for page in pdf_reader.pages:
+                page_count += 1
+                if len(page.images) != 1:
+                    raise ValueError(f"ERROR: During OCR prep, PDF page number {page_count} has multiple images.")
+                page_rotation = page.get('/Rotate')
+                for image in page.images:
+                    ext = os.path.splitext(image.name)[1]
+                    image_path = os.path.join(convertDir, f"{os.path.splitext(file)[0]}-{page_count}{ext}")
+                    if os.path.isfile(image_path):
+                        raise ValueError(f"ERROR: In extracting images for OCR, file already exists: {image_path}.")
+                    with open(image_path, "wb") as fp:
+                        fp.write(image.data)
+                    #address image rotation
+                    if page_rotation:
+                        print ("\tFixing image rotation...")
+                        img = Image.open(image_path)
+                        img_rotate = img.rotate(-abs(page_rotation), expand=1)
+                        img_rotate.save(image_path)
+
+                    page_file = os.path.join(convertDir, f"{os.path.splitext(file)[0]}-{page_count}")
+                    pageOrder.append(page_file + ".pdf")
+                    cmd = ["tesseract", image_path, page_file, "pdf"]
+                    print (f"\t--> reading page {page_count} of {page_total}, {image_path}...")
+                    resp = process(cmd)
+                    if resp != 0:
+                        raise ValueError(f'Error processing file {file}')
+                    # delete temporary image
+                    os.remove(image_path)
+
+            # Merge back to single PDF
+            print (f"Merging back to {file}...")
+            os.rename(filepath, os.path.join(root, "." + file))
+            merger = PdfWriter()
+            for pdf_page in pageOrder:
+                merger.append(pdf_page)
+            merger.write(filepath)
+            merger.close()
+            if os.path.isfile(filepath) and os.stat(filepath).st_size:
+                os.remove(os.path.join(root, "." + file))
+                # delete temporary pdf
+                for pdf_page in pageOrder:
+                    os.remove(pdf_page) 
+
+print ("Cleaning temporary directory...")
+if len(os.listdir(convertDir)) == 0:
+    os.rmdir(convertDir)
+else:
+    raise ValueError(f"ERROR: temporary directory {convertDir} is not empty, cannot cleanup.")
 
 
-if fileCount == 0:
-    print (f"Error: No PDF files found in derivatives folder in package {args.package}")
-elif errors == False:
-    print ("Complete!")
-    print (f"Finished at {datetime.now()}")
+print ("Complete!")
+print (f"Finished at {datetime.now()}")

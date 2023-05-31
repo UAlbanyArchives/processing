@@ -15,7 +15,7 @@ COPY . /code
 RUN ["chmod", "+x", "./gunicorn.sh"]
 RUN apt update
 
-RUN apt install apt-transport-https gnupg wget aptitude gcc -y
+RUN apt install apt-transport-https gnupg wget aptitude -y
 RUN echo 'deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/buster/ buster main' >> /etc/apt/sources.list
 RUN apt update -oAcquire::AllowInsecureRepositories=true
 RUN apt install notesalexp-keyring -oAcquire::AllowInsecureRepositories=true -y
@@ -27,7 +27,6 @@ RUN apt install tzdata -y
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt install rsync imagemagick -y
-RUN apt install libcairo2-dev -y
 
 RUN pip install -r requirements.txt
 
