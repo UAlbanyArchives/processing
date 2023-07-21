@@ -93,7 +93,7 @@ def main(ID, path=None, accession=None):
     listFiles(SIP.bagID)
     
     if accession == None:
-        SIP.extentLog("/automated/DigitizationExtentTracker/DigitizationExtentTracker.xlsx")
+        SIP.extentLog("/DigitizationExtentTracker/DigitizationExtentTracker.xlsx")
         print ("Logged ingest to DigitizationExtentTracker.")
     else:
         print ("Updating accession " + accessionID)

@@ -10,7 +10,7 @@ services:
     volumes:
       - '.:/code'
       - '..\flask_processing_app_testing\Archives:/Archives'
-      - '..\flask_processing_app_testing\automated:/automated'
+      - '..\flask_processing_app_testing\automated\DigitizationExtentTracker:/DigitizationExtentTracker'
       - '..\flask_processing_app_testing\backlog:/backlog'
       - '..\flask_processing_app_testing\ingest:/ingest'
       - '..\flask_processing_app_testing\processing_logs:/logs'

@@ -21,6 +21,8 @@ setup_dir(aip)
 
 automated = os.path.join(base, "automated")
 setup_dir(automated)
+DigitizationExtentTracker = os.path.join(automated, "DigitizationExtentTracker")
+setup_dir(DigitizationExtentTracker)
 
 backlog = os.path.join(base, "backlog")
 setup_dir(backlog)

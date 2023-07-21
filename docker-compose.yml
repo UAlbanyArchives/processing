@@ -8,11 +8,11 @@ services:
     ports:
       - '0.0.0.0:5000:5000'
     volumes:
-      - '/media/Library/SPE_Processing/processing_sandbox/Archives:/Archives'
-      - '/media/Library/SPE_Processing/processing_sandbox/automated:/automated'
-      - '/media/Library/SPE_Processing/processing_sandbox/backlog:/backlog'
-      - '/media/Library/SPE_Processing/processing_sandbox/ingest:/ingest'
-      - '/media/Library/SPE_Processing/processing_sandbox/logs:/logs'
+      - '/media/Masters/Archives:/Archives'
+      - '/media/Library/SPE_Automated/DigitizationExtentTracker:/DigitizationExtentTracker'
+      - '/media/Library/SPE_Processing/backlog:/backlog'
+      - '/media/Library/SPE_Processing/ingest:/ingest'
+      - '/media/Library/SPE_Automated/processing_logs:/logs'
     tty: true
     stdin_open: true
     restart: always
