@@ -276,20 +276,26 @@ def package():
         if not form.validate():
             flash(form.errors, 'error')
         else:
-            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-package-{packageID}.log"
-            command = f"python -u /code/utilities/packageAIP.py {packageID}"
-            if update:
-                command = command + " --update"
-            if noderivatives:
-                command = command + " --noderivatives"
-            command = command + f" >> {log_file} 2>&1 &"
+            collectionID = packageID.split("_")[0]
+            metadata_file = f'/backlog/{collectionID}/{packageID}/metadata/{packageID}.tsv'
+            if not os.path.isfile(metadata_file):
+                error_obj = {"Cannot package": [f"Package {packageID} does not have a metadata file. You must first update the ASpace digital object. Use the Connect to ASpace form for single files, or Build Hyrax Upload Sheet for large ingests."]}
+                flash(error_obj, 'error')
+            else:
+                log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-package-{packageID}.log"
+                command = f"python -u /code/utilities/packageAIP.py {packageID}"
+                if update:
+                    command = command + " --update"
+                if noderivatives:
+                    command = command + " --noderivatives"
+                command = command + f" >> {log_file} 2>&1 &"
 
-            #print ("running command: " + command)
-            finalize = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+                #print ("running command: " + command)
+                finalize = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
 
-            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-            flash(success_msg, 'success')
-            return redirect(url_for('package'))
+                success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+                flash(success_msg, 'success')
+                return redirect(url_for('package'))
 
     return render_template('package.html', error=error)
 
