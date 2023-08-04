@@ -22,6 +22,7 @@ from hyrax import addAccession
 import csv
 from datetime import datetime
 from subprocess import Popen, PIPE
+import traceback
 
 app = Flask(__name__)
 app.secret_key = b'_5#y73:F4T8z\n\xec]/'
@@ -314,6 +315,26 @@ def view_log(logFilename):
     with open(os.path.join(log_dir, logFilename), "r") as f:
         text = f.read()
         return render_template('view_log.html', logFilename=escape(logFilename), log_text=text)
+
+@app.errorhandler(Exception)
+def handle_exception(exception):
+    error_log = "/logs/error.log"
+    now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    stack_header = (
+            "****************************************************************************************************************\n"
+            + now
+            + " - "
+            + repr(exception)
+            + "\n****************************************************************************************************************\n"
+        )
+    stack_trace = stack_header + traceback.format_exc()
+    # prepend to log file
+    with open(error_log, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write(stack_trace + content)
+    return f"Internal Server Error\n{repr(exception)}", 500
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
