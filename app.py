@@ -329,6 +329,8 @@ def handle_exception(exception):
         )
     stack_trace = stack_header + traceback.format_exc()
     # prepend to log file
+    if not os.path.isfile(error_log):
+        open(error_log, 'x').close()
     with open(error_log, 'r+') as f:
         content = f.read()
         f.seek(0, 0)
