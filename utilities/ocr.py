@@ -1,7 +1,7 @@
 import os
 import argparse
 from PIL import Image
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 from datetime import datetime
 from subprocess import Popen, PIPE
 
@@ -68,6 +68,7 @@ for root, dirs, files in os.walk(ocrPath):
             # convert to images
             pageOrder = []
             pdf_reader = PdfReader(filepath)
+
             page_count = 0
             page_total = len(pdf_reader.pages)
             for page in pdf_reader.pages:
@@ -82,6 +83,10 @@ for root, dirs, files in os.walk(ocrPath):
                         raise ValueError(f"ERROR: In extracting images for OCR, file already exists: {image_path}.")
                     with open(image_path, "wb") as fp:
                         fp.write(image.data)
+                    size_cmd = ['convert', '-units pixelsperinch', '-density 300', image_path, image_path]
+                    size_resp = process(cmd)
+                    if size_resp != 0:
+                        raise ValueError(f'Error resizing file {image_path}')
                     #address image rotation
                     if page_rotation:
                         print ("\tFixing image rotation...")
