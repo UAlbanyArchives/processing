@@ -83,7 +83,7 @@ for root, dirs, files in os.walk(ocrPath):
                         raise ValueError(f"ERROR: In extracting images for OCR, file already exists: {image_path}.")
                     with open(image_path, "wb") as fp:
                         fp.write(image.data)
-                    size_cmd = ['convert', '-units pixelsperinch', '-density 300', image_path, image_path]
+                    size_cmd = f'convert -units pixelsperinch -density 300 {image_path} {image_path}'
                     size_resp = process(size_cmd)
                     if size_resp != 0:
                         raise ValueError(f'Error resizing file {image_path}')
