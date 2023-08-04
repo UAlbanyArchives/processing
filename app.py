@@ -147,7 +147,8 @@ def ocr():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-ocr-{packageID}.log"
-            command = f"python -u /code/utilities/ocr.py {packageID} >> {log_file} 2>&1 &"
+            #command = f"python -u /code/utilities/ocr.py {packageID} >> {log_file} 2>&1 &"
+            command = f"python -c 'print(\"test123\")' {packageID} >> {log_file} 2>&1 &"
             if subPath:
                 command = command.replace(">>", f"-p {subPath} >>")
             #print ("running command: " + command)
