@@ -6,7 +6,7 @@ services:
     hostname: aspace-dev.library.albany.edu
     #network_mode: "host"
     ports:
-      - '0.0.0.0:5000:5000'
+      - '5000:5000'
     volumes:
       - '/media/Masters/Archives:/Archives'
       - '/media/Library/SPE_Automated/DigitizationExtentTracker:/DigitizationExtentTracker'
