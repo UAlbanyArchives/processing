@@ -21,9 +21,10 @@ def validate_accessionID(form, field):
 
 def validate_packageID(form, field):
     available_packages = []
-    for collection_packages in os.listdir("/backlog"):
-        available_packages.extend(os.listdir(os.path.join("/backlog", collection_packages)))
-
+    for collection_packages in os.listdir("/backlog"): 
+        if os.path.isdir(os.path.join("/backlog", collection_packages)):
+            available_packages.extend(os.listdir(os.path.join("/backlog", collection_packages)))
+    
     if not "_" in field.data:
         raise validators.ValidationError('Invalid package ID.')
     elif not field.data.startswith(("apap", "ger", "mss", "ua")):
