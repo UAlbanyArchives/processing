@@ -1,4 +1,4 @@
-import os
+import os, re
 import argparse
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
@@ -65,6 +65,17 @@ for root, dirs, files in os.walk(ocrPath):
             filepath = os.path.join(root, file)
             print (f"Processing {file} (file {fileCount} of {fileTotal})...")
 
+            # Getting DPI for each image
+            pageDPI = {}
+            pdfimagesCmd = ["pdfimages", "-list", filepath]
+            pdfimages = Popen(pdfimagesCmd, stdout=PIPE, stderr=PIPE)
+            lineCount = -2
+            for line in pdfimages.stdout:
+                lineCount += 1
+                if lineCount > 0:
+                    col = re.split("\\s+", line.decode().strip())
+                    pageDPI[lineCount] = f"{col[12]}x{col[13]}"
+
             # convert to images
             pageOrder = []
             pdf_reader = PdfReader(filepath)
@@ -83,10 +94,17 @@ for root, dirs, files in os.walk(ocrPath):
                         raise ValueError(f"ERROR: In extracting images for OCR, file already exists: {image_path}.")
                     with open(image_path, "wb") as fp:
                         fp.write(image.data)
-                    size_cmd = f'convert -units pixelsperinch -density 300 {image_path} {image_path}'
+
+                    # fix sizing
+                    print (f"\tRestoring to {pageDPI[page_count]} dpi...")
+                    size_cmd = ['convert', '-units', 'pixelsperinch', '-density', pageDPI[page_count], image_path, image_path]
+                    if ext.lower() == "png":
+                        size_cmd.insert(1, '-units pixelsperinch')
+                    #print (f"\trunning {' '.join(size_cmd)}")
                     size_resp = process(size_cmd)
                     if size_resp != 0:
                         raise ValueError(f'Error resizing file {image_path}')
+
                     #address image rotation
                     if page_rotation:
                         print ("\tFixing image rotation...")
