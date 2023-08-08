@@ -110,26 +110,26 @@ if args.output.lower() == "pdf":
             convertDir = os.path.join(package, "converting")
             if not os.path.isdir(convertDir):
                 os.mkdir(convertDir)
-            for inputFile in sorted(os.listdir(folder)):
-                if inputFile.lower().endswith(format1) or inputFile.lower().endswith(format2):
-                    convertFile = os.path.join(convertDir, os.path.splitext(inputFile)[0] + ".jpg")
-                    print ("compressing " + inputFile + "...")
-                    cmd = [imagemagick, os.path.join(folder, inputFile)]
-                    if args.resize:
-                        cmd.append("-resize")
-                        cmd.append(args.resize)
-                    if args.density:
-                        cmd.append("-density")
-                        cmd.append(args.density)
-                    if args.monochrome:
-                        cmd.append("-monochrome")
-                    cmd.append(convertFile)
-                    #print (cmd)
-                    process(cmd)
-                    pageList.append(convertFile)
             if os.path.isfile(outputPath):
                 print ("skipping, as " + newFilename + ".pdf already exists.")
             else:
+                for inputFile in sorted(os.listdir(folder)):
+                    if inputFile.lower().endswith(format1) or inputFile.lower().endswith(format2):
+                        convertFile = os.path.join(convertDir, os.path.splitext(inputFile)[0] + ".jpg")
+                        print ("compressing " + inputFile + "...")
+                        cmd = [imagemagick, os.path.join(folder, inputFile)]
+                        if args.resize:
+                            cmd.append("-resize")
+                            cmd.append(args.resize)
+                        if args.density:
+                            cmd.append("-density")
+                            cmd.append(args.density)
+                        if args.monochrome:
+                            cmd.append("-monochrome")
+                        cmd.append(convertFile)
+                        #print (cmd)
+                        process(cmd)
+                        pageList.append(convertFile)
                 print ("converting " + newFilename + " to " + outputPath)
                 #print(pageList)
                 f = open(outputPath, "wb")
