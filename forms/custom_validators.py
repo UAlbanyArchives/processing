@@ -5,6 +5,7 @@ from asnake.client import ASnakeClient
 
 logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="INFO")
 client = ASnakeClient()
+client.authorize()
 
 def validate_collectionID(form, field):
     available_collections = os.listdir("/ingest")
@@ -40,6 +41,6 @@ def validate_packageID(form, field):
 def validate_refID(form, field):
     r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + field.data.strip())
     if r.status_code != 200:
-        raise validators.ValidationError(f'Invalid ASpace request. {field.data.strip()} returns HTTP {str(r.status_code)}')
+        raise validators.ValidationError(f'Invalid ASpace request. \"{field.data.strip()}\" returns HTTP {str(r.status_code)}')
     elif len(r.json()['archival_objects']) != 1:
         raise validators.ValidationError(f'Invalid ref ID. Found {str(len(r.json()["archival_objects"]))} matching archival objects.')
