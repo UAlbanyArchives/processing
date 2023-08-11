@@ -20,6 +20,7 @@ from aspaceDAO import addDAO
 from hyrax import addAccession
 
 import csv
+import shutil
 from datetime import datetime
 from subprocess import Popen, PIPE
 import traceback
@@ -129,6 +130,13 @@ def list():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-list-{packageID}.log"
+            colID = packageID.split("_")[0].split("-")[0]
+            if log_file:
+                with open(log_file, "a") as f:
+                    f.write("Copying empty asInventory sheet to metadata directory...\n")
+            else:
+                print ("Copying empty asInventory sheet to metadata directory...")
+            shutil.copy2("/code/static/asInventory.xlsx", f"/backlog/{colID}/{packageID}/metadata")
             listFiles(packageID, True, log_file)
 
             success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
