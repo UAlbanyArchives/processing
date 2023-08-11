@@ -5,7 +5,6 @@ from asnake.client import ASnakeClient
 
 logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="INFO")
 client = ASnakeClient()
-client.authorize()
 
 def validate_collectionID(form, field):
     available_collections = os.listdir("/ingest")

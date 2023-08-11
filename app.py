@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask import flash, redirect, Markup
 from flask import request
-from flask import url_for
+from flask import url_for, send_from_directory
 from markupsafe import escape
 from flask import render_template
 
@@ -135,6 +135,11 @@ def list():
             flash(success_msg, 'success')
             return redirect(url_for('list'))
     return render_template('list.html', error=error)
+
+@app.route('/sheet', methods=['GET'])
+def downloadSheet():
+    sheetPath = "/code/static"
+    return send_from_directory(sheetPath, "asInventory.xlsx", as_attachment=True)
 
 @app.route('/ocr', methods=['GET', 'POST'])
 def ocr():
