@@ -186,8 +186,14 @@ def aspace():
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-aspace-{packageID}.log"
             packagePath = os.path.join("/backlog", packageID.split("_")[0], packageID)
-            file_name = os.listdir(os.path.join(packagePath, "derivatives"))[0]
-
+            if len(os.listdir(os.path.join(packagePath, "derivatives"))) > 0:
+                file_name = os.listdir(os.path.join(packagePath, "derivatives"))[0]
+            elif len(os.listdir(os.path.join(packagePath, "masters"))) > 0:
+                file_name = os.listdir(os.path.join(packagePath, "masters"))[0]
+            else:
+                error_obj = {"Invalid_package": [f"Package {packageID} has no files in either derivatives or masters."]}
+                flash(error_obj, 'error')
+ 
             #Add package ID to Hyrax if not there?
             hyraxData = addAccession(hyraxURI, packageID, refID, log_file)
             hyraxData[2] = file_name
