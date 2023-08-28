@@ -29,9 +29,12 @@ hyraxSheetFile = os.path.join(metadata, args.package + ".tsv")
 #    os.mkdir(hyraxFiles)
 
 if not os.path.isdir(package) or not os.path.isdir(derivatives) or not os.path.isdir(metadata):
-    raise ("ERROR: " + package + " is not a valid package.")
-    
-collectionData = requests.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "?format=json", verify=False).json()
+    raise ValueError("ERROR: " + package + " is not a valid package.")
+
+session = requests.Session()
+session.verify = False
+
+collectionData = session.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "?format=json", verify=False).json()
 collectingArea = collectionData["data"]["attributes"]["repository_ssm"]["attributes"]["value"][0]
 collection = collectionData["data"]["attributes"]["title_ssm"]["attributes"]["value"][0]
 processingNote = "Processing documentation available at: https://wiki.albany.edu/display/SCA/Processing+Ingested+Digital+Files"
@@ -90,13 +93,13 @@ for sheetFile in os.listdir(metadata):
                         if rowCount > 6:
                             if not row[22].value is None:
                                 if not row[0].value and row[8].value and row[9].value:
-                                    raise ("ERROR: Row " + str(rowCount) + " is invalid (" + str(row[22].value) + ").")
+                                    raise ValueError(f"ERROR: Row {rowCount} is invalid. Missing Ref ID ({row[22].value}).")
                                 else:
                                     refID = row[0].value
                                     title = row[8].value
                                     date = row[9].value
                                     print ("\tReading " + str(title) + "...")
-                                    arclight = requests.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "aspace_" + refID + "?format=json", verify=False)
+                                    arclight = session.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "aspace_" + refID + "?format=json", verify=False)
                                     if arclight.status_code == 200:
                                         parentList = []
                                         itemData = arclight.json()
