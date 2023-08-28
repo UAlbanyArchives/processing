@@ -17,7 +17,7 @@ class DerivativesForm(Form):
     packageID = StringField('Package ID', [validators.Length(min=28, max=32), validate_packageID])
     inputFormat = StringField('Input Path', [validators.Length(min=3, max=3)])
     outputFormat = StringField('Output Path', [validators.Length(min=3, max=3)])
-    subPath = StringField('Sub Path', [validators.Length(min=0, max=35)])
+    subPath = StringField('Sub Path', [validators.Length(min=0, max=99)])
     resize = StringField('Resize', [validators.Length(min=0, max=13), validate_resize])
     density = StringField('Density', [validators.Length(min=0, max=6), validate_density])
     monochrome = BooleanField()
