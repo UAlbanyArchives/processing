@@ -9,10 +9,6 @@ EXPOSE 5000
 COPY ./requirements.txt /code/requirements.txt
 WORKDIR /code
 
-COPY .archivessnake.yml /root
-COPY .hyrax.yml /root
-COPY . /code
-RUN ["chmod", "+x", "./gunicorn.sh"]
 RUN apt update
 
 RUN apt install apt-transport-https gnupg wget aptitude -y
@@ -30,5 +26,10 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt install rsync imagemagick -y
 
 RUN pip install -r requirements.txt
+
+COPY .archivessnake.yml /root
+COPY .hyrax.yml /root
+COPY . /code
+RUN ["chmod", "+x", "./gunicorn.sh"]
 
 ENTRYPOINT ["./gunicorn.sh"]
