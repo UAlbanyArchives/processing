@@ -1,5 +1,6 @@
 import os
 import csv
+import urllib3
 import requests
 import argparse
 import openpyxl
@@ -31,10 +32,12 @@ hyraxSheetFile = os.path.join(metadata, args.package + ".tsv")
 if not os.path.isdir(package) or not os.path.isdir(derivatives) or not os.path.isdir(metadata):
     raise ValueError("ERROR: " + package + " is not a valid package.")
 
+# ignore not verifying SSL warnings and set up session
+urllib3.disable_warnings()
 session = requests.Session()
 session.verify = False
 
-collectionData = session.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "?format=json", verify=False).json()
+collectionData = session.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "?format=json").json()
 collectingArea = collectionData["data"]["attributes"]["repository_ssm"]["attributes"]["value"][0]
 collection = collectionData["data"]["attributes"]["title_ssm"]["attributes"]["value"][0]
 processingNote = "Processing documentation available at: https://wiki.albany.edu/display/SCA/Processing+Ingested+Digital+Files"
@@ -42,7 +45,7 @@ processingNote = "Processing documentation available at: https://wiki.albany.edu
 # make hyrax sheet
 hyraxSheet = []
 
-#function to read ASpace tree to get parent ref_ids
+# recursive function to read ASpace tree to get parent ref_ids
 def getParents(obj, parentList, level, objURI):
     level += 1
     for child in obj["children"]:
@@ -93,13 +96,13 @@ for sheetFile in os.listdir(metadata):
                         if rowCount > 6:
                             if not row[22].value is None:
                                 if not row[0].value and row[8].value and row[9].value:
-                                    raise ValueError(f"ERROR: Row {rowCount} is invalid. Missing Ref ID ({row[22].value}).")
+                                    raise ValueError(f"ERROR: Row {rowCount} is invalid. Missing Ref IDalue}).")
                                 else:
                                     refID = row[0].value
                                     title = row[8].value
                                     date = row[9].value
                                     print ("\tReading " + str(title) + "...")
-                                    arclight = session.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "aspace_" + refID + "?format=json", verify=False)
+                                    arclight = session.get("https://archives.albany.edu/description/catalog/" + colID.replace(".", "-") + "aspace_" + refID + "?format=json")
                                     if arclight.status_code == 200:
                                         parentList = []
                                         itemData = arclight.json()
