@@ -96,7 +96,7 @@ for sheetFile in os.listdir(metadata):
                         if rowCount > 6:
                             if not row[22].value is None:
                                 if not row[0].value and row[8].value and row[9].value:
-                                    raise ValueError(f"ERROR: Row {rowCount} is invalid. Missing Ref IDalue}).")
+                                    raise ValueError(f"ERROR: Row {rowCount} is invalid. Missing Ref ID for {row[8].value}).")
                                 else:
                                     refID = row[0].value
                                     title = row[8].value
