@@ -44,8 +44,6 @@ class SubmissionInformationPackage:
 
         self.bag = bagit.make_bag(self.bagDir, metadata)
         self.data = os.path.join(self.bagDir, "data")
-        with open(os.path.join(self.bagDir, "package_ID.txt"), "w") as f:
-            f.write(self.bagID)
         
     def clean(self):
         for root, dirs, files in os.walk(self.data):
@@ -152,6 +150,8 @@ class SubmissionInformationPackage:
             procMetadata = os.path.join(procPath, "metadata")
             if not os.path.isdir(procMetadata):
                 os.mkdir(procMetadata)
+            with open(os.path.join(procPath, "package_ID.txt"), "w") as f:
+                f.write(self.bagID)
                 
     def extentLog(self, logFile):
         import openpyxl
