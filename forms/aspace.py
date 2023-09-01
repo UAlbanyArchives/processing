@@ -1,5 +1,5 @@
 from wtforms import Form, BooleanField, StringField, validators
-from forms.custom_validators import validate_packageID, validate_refID
+from forms.custom_validators import validate_packageID
 import os
 import urllib.request
 from urllib.parse import urlsplit, urlunsplit
@@ -27,5 +27,4 @@ def validate_singleFile(form, field):
 
 class AspaceForm(Form):
     packageID = StringField('Package ID', [validators.Length(min=28, max=32), validate_packageID, validate_singleFile])
-    refID = StringField('Ref ID', [validators.Length(min=32, max=32), validate_refID])
     hyraxURI = StringField('Hyrax URI', [validators.Length(min=50, max=100), validate_hyraxURI], [strip_params])

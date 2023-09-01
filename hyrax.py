@@ -26,7 +26,7 @@ def single(field):
     else:
         return field[0]
 
-def addAccession(hyraxURI, packageID, refID, log_file):
+def addAccession(hyraxURI, packageID, log_file):
     #print (f"trying {hyraxURI}")
     session = requests.Session()
     r = session.get(hyraxURI + ".json", verify=False)
@@ -47,44 +47,39 @@ def addAccession(hyraxURI, packageID, refID, log_file):
         "|".join(hyraxJSON["extent"]), single(hyraxJSON["language"])
     ]
 
-    #Check to make sure ref_id provided matches whats in Hyrax
-    if hyraxJSON["archivesspace_record"] != refID:
-        log(f'ERROR: Failed to add accession ID to Hyrax. \n\tProvided ASpace ref ID {refID} does not match metadata in Hyrax. \n\tObject {hyraxURI} instead has ref ID of {hyraxJSON["archivesspace_record"]}.', log_file)
+    if packageID in hyraxJSON["accession"]:
+        log("Accession ID already entered in Hyrax.", log_file)
     else:
+        #get Hyrax login data
+        configFile = os.path.join(os.path.expanduser("~"), ".hyrax.yml")
+        with open(configFile, 'r') as stream:
+            try:
+                config = yaml.load(stream, Loader=yaml.Loader)
+                log("Read Hyrax config data", log_file)
+            except yaml.YAMLError as exc:
+                print(exc)
+                
+        loginPage = session.get(config["baseurl"], verify=False)
+        check_response(loginPage, "Connecting to Hyrax login page", log_file)
 
-        if packageID in hyraxJSON["accession"]:
-            log("Accession ID already entered in Hyrax.", log_file)
-        else:
-            #get Hyrax login data
-            configFile = os.path.join(os.path.expanduser("~"), ".hyrax.yml")
-            with open(configFile, 'r') as stream:
-                try:
-                    config = yaml.load(stream, Loader=yaml.Loader)
-                    log("Read Hyrax config data", log_file)
-                except yaml.YAMLError as exc:
-                    print(exc)
-                    
-            loginPage = session.get(config["baseurl"], verify=False)
-            check_response(loginPage, "Connecting to Hyrax login page", log_file)
+        loginSoup = BeautifulSoup(loginPage.text, 'html.parser')
+        token = loginSoup.find("meta",  {"name": "csrf-token"})["content"]
+        loginData = {"user[email]": config["username"], "user[password]": config["password"], "authenticity_token" : token}
+        signin = session.post(config["baseurl"], data=loginData, verify=False)
+        check_response(signin, "Logging into Hyrax", log_file)
 
-            loginSoup = BeautifulSoup(loginPage.text, 'html.parser')
-            token = loginSoup.find("meta",  {"name": "csrf-token"})["content"]
-            loginData = {"user[email]": config["username"], "user[password]": config["password"], "authenticity_token" : token}
-            signin = session.post(config["baseurl"], data=loginData, verify=False)
-            check_response(signin, "Logging into Hyrax", log_file)
-
-            editForm = session.get(hyraxURI + "/edit", headers={'Cache-Control': 'no-cache'}, verify=False)
-            check_response(editForm, "Reading Hyrax edit form", log_file)
-            
-            editSoup = BeautifulSoup(editForm.text, 'html.parser')
-            editToken = editSoup.find("meta",  {"name": "csrf-token"})["content"]
-            form = editSoup.find("form",  {"class": "edit_dao"})
-            submitToken = form.find("input",  {"name": "authenticity_token"}).get("value")
-            submitData = {"authenticity_token": submitToken, "dao[accession][]": packageID, '_method': 'patch'}
-            
-            headers = {'X-CSRF-Token': submitData["authenticity_token"], 'Cache-Control': 'no-cache'}
-            submit = session.post(hyraxURI + "?locale=en", headers=headers, data=submitData, verify=False)
-            check_response(submit, "Submitting updated accession ID to Hyrax", log_file, submitData)
+        editForm = session.get(hyraxURI + "/edit", headers={'Cache-Control': 'no-cache'}, verify=False)
+        check_response(editForm, "Reading Hyrax edit form", log_file)
+        
+        editSoup = BeautifulSoup(editForm.text, 'html.parser')
+        editToken = editSoup.find("meta",  {"name": "csrf-token"})["content"]
+        form = editSoup.find("form",  {"class": "edit_dao"})
+        submitToken = form.find("input",  {"name": "authenticity_token"}).get("value")
+        submitData = {"authenticity_token": submitToken, "dao[accession][]": packageID, '_method': 'patch'}
+        
+        headers = {'X-CSRF-Token': submitData["authenticity_token"], 'Cache-Control': 'no-cache'}
+        submit = session.post(hyraxURI + "?locale=en", headers=headers, data=submitData, verify=False)
+        check_response(submit, "Submitting updated accession ID to Hyrax", log_file, submitData)
 
     return hyraxData
     

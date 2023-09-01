@@ -177,7 +177,6 @@ def aspace():
     if request.method == 'POST':
         form = AspaceForm(request.form)
         packageID = form.packageID.data.strip()
-        refID = form.refID.data.strip()
         hyraxURI = form.hyraxURI.data.strip()
 
         #validate
@@ -195,40 +194,36 @@ def aspace():
                 flash(error_obj, 'error')
  
             #Add package ID to Hyrax if not there?
-            hyraxData = addAccession(hyraxURI, packageID, refID, log_file)
+            hyraxData = addAccession(hyraxURI, packageID, log_file)
             hyraxData[2] = file_name
 
-            #Check to make sure ref_id provided matches whats in Hyrax
-            if hyraxData[7] != refID:
-                error_obj = {"Invalid_refID": [f"Provided ASpace ref ID {refID} does not match metadata in Hyrax. Object {hyraxURI} instead has ref ID of {hyraxData[7]}."]}
-                flash(error_obj, 'error')
-            else:
-                #Create digital object record in ASpace
-                addDAO(refID, hyraxURI, log_file)
+            #Create digital object record in ASpace
+            refID = hyraxData[7]
+            addDAO(refID, hyraxURI, log_file)
 
-                #Add CSV to package /metadata folder
-                with open(log_file, "a") as open_log:
-                    open_log.write("\nWriting Hyrax metadata to package...")
-                    headers = ["Type", "URIs", "File Paths", "Accession", "Collecting Area", "Collection Number", "Collection", \
-                    "ArchivesSpace ID", "Record Parents", "Title", "Description", "Date Created", "Resource Type", "License", \
-                    "Rights Statement", "Subjects", "Whole/Part", "Processing Activity", "Extent", "Language"]
-                    metadataPath = os.path.join(packagePath, "metadata")
-                    metadataFile = os.path.join(metadataPath, packageID + ".tsv")
-                    if os.path.isfile(metadataFile):
-                         flash(form.errors, 'error')
-                    else:
-                        with open(metadataFile, "w") as f:
-                            writer = csv.writer(f, delimiter='\t', lineterminator='\n')
-                            writer.writerow(headers)
-                            writer.writerow(hyraxData)
-                            f.close()
-                    open_log.write("\nComplete!")
-                    open_log.write(f"\nFinished at {datetime.now()}")
-                    open_log.close()
+            #Add CSV to package /metadata folder
+            with open(log_file, "a") as open_log:
+                open_log.write("\nWriting Hyrax metadata to package...")
+                headers = ["Type", "URIs", "File Paths", "Accession", "Collecting Area", "Collection Number", "Collection", \
+                "ArchivesSpace ID", "Record Parents", "Title", "Description", "Date Created", "Resource Type", "License", \
+                "Rights Statement", "Subjects", "Whole/Part", "Processing Activity", "Extent", "Language"]
+                metadataPath = os.path.join(packagePath, "metadata")
+                metadataFile = os.path.join(metadataPath, packageID + ".tsv")
+                if os.path.isfile(metadataFile):
+                     flash(form.errors, 'error')
+                else:
+                    with open(metadataFile, "w") as f:
+                        writer = csv.writer(f, delimiter='\t', lineterminator='\n')
+                        writer.writerow(headers)
+                        writer.writerow(hyraxData)
+                        f.close()
+                open_log.write("\nComplete!")
+                open_log.write(f"\nFinished at {datetime.now()}")
+                open_log.close()
 
-                success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-                flash(success_msg, 'success')
-                return redirect(url_for('aspace'))
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('aspace'))
             
     return render_template('aspace.html', error=error)
 

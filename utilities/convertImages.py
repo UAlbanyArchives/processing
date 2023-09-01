@@ -81,7 +81,10 @@ if args.output.lower() == "pdf":
         rootDir = []
         switch = False
         pathList = folder.split(os.path.sep)
-        newFilename = pathList[-1]
+        if pathList[-1] == "masters":
+            newFilename = "root"
+        else:
+            newFilename = pathList[-1]
         for item in pathList:
             if item == newFilename:
                 switch = False
