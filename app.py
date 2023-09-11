@@ -210,7 +210,11 @@ def aspace():
                 metadataPath = os.path.join(packagePath, "metadata")
                 metadataFile = os.path.join(metadataPath, packageID + ".tsv")
                 if os.path.isfile(metadataFile):
-                     flash(form.errors, 'error')
+                    #append to existing .tsv
+                    with open(metadataFile, "a") as f:
+                        writer = csv.writer(f, delimiter='\t', lineterminator='\n')
+                        writer.writerow(hyraxData)
+                        f.close()
                 else:
                     with open(metadataFile, "w") as f:
                         writer = csv.writer(f, delimiter='\t', lineterminator='\n')
