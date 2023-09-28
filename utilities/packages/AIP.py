@@ -156,9 +156,11 @@ class ArchivalInformationPackage:
         if not os.path.isdir(dest):
             os.mkdir(dest)
         for file in os.listdir(sipDir):
-            filePath = os.path.join(sipDir, file)
-            if os.path.isfile(filePath):
-                shutil.copy2(filePath, dest)
+            #exclude temp backup metadata and derivatives that were packaged during ingest
+            if file != "metadata" and file != "derivatives":
+                filePath = os.path.join(sipDir, file)
+                if os.path.isfile(filePath):
+                    shutil.copy2(filePath, dest)
     
     def checkSIPManifest(self, algorithm="sha256"):
         import hashlib

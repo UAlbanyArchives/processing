@@ -4,8 +4,9 @@ import bagit
 import shutil
 import shortuuid
 from datetime import datetime
+from .common import Package
 
-class SubmissionInformationPackage:
+class SubmissionInformationPackage(Package):
 
     def __init__(self):
         self.excludeList = ["thumbs.db", "desktop.ini", ".ds_store"]
@@ -18,6 +19,7 @@ class SubmissionInformationPackage:
             raise Exception("ERROR: " + str(path) + " is not a valid SIP. You may want to create a SIP with .create().")
 
         self.bag = bagit.Bag(path)
+        self.bagDir = path
         self.bagID = os.path.basename(path)
         self.colID = self.bagID.split("_")[0]
         self.data = os.path.join(path, "data")
@@ -54,22 +56,36 @@ class SubmissionInformationPackage:
                     os.remove(filePath)
     
     def package(self, dir):
-        self.setupProcecssing()
+        self.setupProcessing()
         
         if not os.path.isdir(dir):
             raise Exception("ERROR: " + str(dir) + " is not a valid path.")
         else:
             # Move files and folders to AIP
             for thing in os.listdir(dir):
-                thingPath = os.path.join(dir, thing)
-                if os.path.isfile(thingPath):
-                    if not thing.lower() in self.excludeList:
-                        shutil.copy2(thingPath, self.data)
-                        shutil.copy2(thingPath, self.procMasters)
+                if thing == "metadata":
+                    sipMetadata = os.path.join(self.bagDir, "metadata")
+                    if not os.path.isdir(sipMetadata):
+                        os.mkdir(sipMetadata)
+                    for item in os.listdir(os.path.join(dir, thing)):
+                        print (f"copying {os.path.join(dir, thing, item)} to {self.procMetadata}")
+                        self.copyRsync(os.path.join(dir, thing, item), sipMetadata)
+                        self.copyRsync(os.path.join(dir, thing, item), self.procMetadata)
+                elif thing == "derivatives":
+                    sipDerivatives = os.path.join(self.bagDir, "derivatives")
+                    if not os.path.isdir(sipDerivatives):
+                        os.mkdir(sipDerivatives)
+                    for item in os.listdir(os.path.join(dir, thing)):
+                        print (f"copying {os.path.join(dir, thing, item)} to {self.procDerivatives}")
+                        self.copyRsync(os.path.join(dir, thing, item), sipDerivatives)
+                        self.copyRsync(os.path.join(dir, thing, item), self.procDerivatives)
                 else:
-                    shutil.copytree(thingPath, os.path.join(self.data, thing))
-                    shutil.copytree(thingPath, os.path.join(self.procMasters, thing))
-            # Delete files and fodlers after move 
+                    print (f"copying {os.path.join(dir, thing)} to {self.data}")
+                    self.copyRsync(os.path.join(dir, thing), self.data)
+                    print (f"copying {os.path.join(dir, thing)} to {self.procMasters}")
+                    self.copyRsync(os.path.join(dir, thing), self.procMasters)
+            # Delete files and folders after move 
+            print (f"Deleting files in {dir} after copying...")
             for thing in os.listdir(dir):
                 thingPath = os.path.join(dir, thing)
                 if os.path.isfile(thingPath):
@@ -129,7 +145,7 @@ class SubmissionInformationPackage:
                     end = date
         return [begin, end]
                     
-    def setupProcecssing(self):
+    def setupProcessing(self):
         
         if not os.path.isdir(self.processingRoot):
             raise Exception("ERROR: Processing Path " + str(self.processingRoot) + " is not a valid path.")
@@ -147,9 +163,11 @@ class SubmissionInformationPackage:
             procDerivatives = os.path.join(procPath, "derivatives")
             if not os.path.isdir(procDerivatives):
                 os.mkdir(procDerivatives)
+            self.procDerivatives = procDerivatives
             procMetadata = os.path.join(procPath, "metadata")
             if not os.path.isdir(procMetadata):
                 os.mkdir(procMetadata)
+            self.procMetadata = procMetadata
             with open(os.path.join(procPath, "package_ID.txt"), "w") as f:
                 f.write(self.bagID)
                 
