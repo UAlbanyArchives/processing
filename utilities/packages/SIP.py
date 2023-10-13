@@ -204,7 +204,7 @@ class SubmissionInformationPackage(Package):
         aipPath = os.path.join(self.aipDir, self.colID, self.bagID)
         if not os.path.isdir(aipPath):
             raise Exception("ERROR: " + str(aipPath) + " does not exist. A valid AIP must be present to use SIP.safeRemove().")
-        import AIP
+        from . import AIP
         this = AIP.ArchivalInformationPackage()
         this.load(aipPath)
         if this.bag.is_valid():
