@@ -94,6 +94,8 @@ for sheetFile in os.listdir(metadata):
                                     
                                     if match == False:
                                         print ("ERROR: failed to find matching refID " + refID + " in hyrax upload file " + hyraxImport)
+                                else:
+                                    print (f"ERROR: no matching file for {daoPath}. Does not exist in either derivatives or masters.")
             wb.save(filename=os.path.join(metadata, "updated_" + sheetFile))
 if len(sheetCount) > 0:
     print (f"Complete! Updated {sheetCount} asInventory spreadsheets.")
