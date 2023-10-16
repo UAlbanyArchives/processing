@@ -97,7 +97,7 @@ for sheetFile in os.listdir(metadata):
                                 else:
                                     print (f"ERROR: no matching file for {daoPath}. Does not exist in either derivatives or masters.")
             wb.save(filename=os.path.join(metadata, "updated_" + sheetFile))
-if len(sheetCount) > 0:
+if sheetCount > 0:
     print (f"Complete! Updated {sheetCount} asInventory spreadsheets.")
 else:
     print ("ERROR: Found no valid asInventory spreadsheets.")
