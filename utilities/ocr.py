@@ -79,62 +79,71 @@ for root, dirs, files in os.walk(ocrPath):
             # convert to images
             pageOrder = []
             pdf_reader = PdfReader(filepath)
-
             page_count = 0
             page_total = len(pdf_reader.pages)
+
+            # check if PDF already has embeded text
+            embeded_text = False
             for page in pdf_reader.pages:
-                page_count += 1
-                if len(page.images) != 1:
-                    raise ValueError(f"ERROR: During OCR prep, PDF page number {page_count} has multiple images.")
-                page_rotation = page.get('/Rotate')
-                for image in page.images:
-                    ext = os.path.splitext(image.name)[1]
-                    image_path = os.path.join(convertDir, f"{os.path.splitext(file)[0]}-{page_count}{ext}")
-                    if os.path.isfile(image_path):
-                        raise ValueError(f"ERROR: In extracting images for OCR, file already exists: {image_path}.")
-                    with open(image_path, "wb") as fp:
-                        fp.write(image.data)
+                if len(page.extract_text().strip()) > 0:
+                    embeded_text = True
+                    print (f"WARNING: Ignoring {file} as it already contains embeded text.")
+            if embeded_text == False:
 
-                    # fix sizing
-                    print (f"\tRestoring to {pageDPI[page_count]} dpi...")
-                    size_cmd = ['convert', '-units', 'pixelsperinch', '-density', pageDPI[page_count], image_path, image_path]
-                    if ext.lower() == "png":
-                        size_cmd.insert(1, '-units pixelsperinch')
-                    #print (f"\trunning {' '.join(size_cmd)}")
-                    size_resp = process(size_cmd)
-                    if size_resp != 0:
-                        raise ValueError(f'Error resizing file {image_path}')
+                # Extract page images to converting directory and OCR with tesseract
+                for page in pdf_reader.pages:
+                    page_count += 1
+                    if len(page.images) != 1:
+                        raise ValueError(f"ERROR: During OCR prep, PDF page number {page_count} has multiple images.")
+                    page_rotation = page.get('/Rotate')
+                    for image in page.images:
+                        ext = os.path.splitext(image.name)[1]
+                        image_path = os.path.join(convertDir, f"{os.path.splitext(file)[0]}-{page_count}{ext}")
+                        if os.path.isfile(image_path):
+                            raise ValueError(f"ERROR: In extracting images for OCR, file already exists: {image_path}.")
+                        with open(image_path, "wb") as fp:
+                            fp.write(image.data)
 
-                    #address image rotation
-                    if page_rotation:
-                        print ("\tFixing image rotation...")
-                        img = Image.open(image_path)
-                        img_rotate = img.rotate(-abs(page_rotation), expand=1)
-                        img_rotate.save(image_path)
+                        # fix sizing
+                        print (f"\tRestoring to {pageDPI[page_count]} dpi...")
+                        size_cmd = ['convert', '-units', 'pixelsperinch', '-density', pageDPI[page_count], image_path, image_path]
+                        if ext.lower() == "png":
+                            size_cmd.insert(1, '-units pixelsperinch')
+                        #print (f"\trunning {' '.join(size_cmd)}")
+                        size_resp = process(size_cmd)
+                        if size_resp != 0:
+                            raise ValueError(f'Error resizing file {image_path}')
 
-                    page_file = os.path.join(convertDir, f"{os.path.splitext(file)[0]}-{page_count}")
-                    pageOrder.append(page_file + ".pdf")
-                    cmd = ["tesseract", image_path, page_file, "pdf"]
-                    print (f"\t--> reading page {page_count} of {page_total}, {image_path}...")
-                    resp = process(cmd)
-                    if resp != 0:
-                        raise ValueError(f'Error processing file {file}')
-                    # delete temporary image
-                    os.remove(image_path)
+                        #address image rotation
+                        if page_rotation:
+                            print ("\tFixing image rotation...")
+                            img = Image.open(image_path)
+                            img_rotate = img.rotate(-abs(page_rotation), expand=1)
+                            img_rotate.save(image_path)
 
-            # Merge back to single PDF
-            print (f"Merging back to {file}...")
-            os.rename(filepath, os.path.join(root, "." + file))
-            merger = PdfWriter()
-            for pdf_page in pageOrder:
-                merger.append(pdf_page)
-            merger.write(filepath)
-            merger.close()
-            if os.path.isfile(filepath) and os.stat(filepath).st_size:
-                os.remove(os.path.join(root, "." + file))
-                # delete temporary pdf
+                        page_file = os.path.join(convertDir, f"{os.path.splitext(file)[0]}-{page_count}")
+                        pageOrder.append(page_file + ".pdf")
+                        cmd = ["tesseract", image_path, page_file, "pdf"]
+                        print (f"\t--> reading page {page_count} of {page_total}, {image_path}...")
+                        resp = process(cmd)
+                        if resp != 0:
+                            raise ValueError(f'Error processing file {file}')
+                        # delete temporary image
+                        os.remove(image_path)
+
+                # Merge back to single PDF
+                print (f"Merging back to {file}...")
+                os.rename(filepath, os.path.join(root, "." + file))
+                merger = PdfWriter()
                 for pdf_page in pageOrder:
-                    os.remove(pdf_page) 
+                    merger.append(pdf_page)
+                merger.write(filepath)
+                merger.close()
+                if os.path.isfile(filepath) and os.stat(filepath).st_size:
+                    os.remove(os.path.join(root, "." + file))
+                    # delete temporary pdf
+                    for pdf_page in pageOrder:
+                        os.remove(pdf_page) 
 
 print ("Cleaning temporary directory...")
 if len(os.listdir(convertDir)) == 0:
