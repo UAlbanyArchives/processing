@@ -76,13 +76,8 @@ def convertIDs(parentURIs):
     Its much faster to to this for just the URI list than make calls for every node in getParentURIs
     """
     parentIDs = []
-    level = 0
     for parent in parentURIs:
-        level += 1
-        if level == 1:
-            parentRefID = client.get(parent).json()["id_0"]    
-        else:
-            parentRefID = "aspace_" + client.get(parent).json()["ref_id"]  
+        parentRefID = client.get(parent).json()["ref_id"]  
         parentIDs.append(parentRefID)
     return parentIDs
 
@@ -134,7 +129,7 @@ for sheetFile in os.listdir(metadata):
                                     title = row[8].value
                                     date = row[9].value
                                     print ("\tReading " + str(title) + "...")
-                                    
+
                                     #for new objects not yet indexed in ArcLight
                                     ref = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + refID).json()
                                     item = client.get(ref["archival_objects"][0]["ref"]).json()
@@ -144,7 +139,7 @@ for sheetFile in os.listdir(metadata):
 
                                     objURI = ref["archival_objects"][0]["ref"]
                                     parentURIs = getParentURIs(tree, objURI)
-                                    parentList = convertIDs(parentURIs)
+                                    parentList = convertIDs(parentURIs[1:])
                                     #print (parentList)
                                     parents = "|".join(parentList)                                            
                                     
