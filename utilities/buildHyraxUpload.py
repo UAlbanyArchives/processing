@@ -145,7 +145,7 @@ for sheetFile in os.listdir(metadata):
                                     
                                     derivativesDao = os.path.join(derivatives, row[22].value)
                                     masterDao = os.path.join(masters, row[22].value)
-                                    if not os.path.isfile(derivativesDao) and not os.path.isfile(masterDao):
+                                    if not os.path.exists(derivativesDao) and not os.path.exists(masterDao):
                                         print ("WARNING: DAO filename \"" + row[22].value + "\" does not exist in package.")
                                         warningList.append(row[22].value)
                                     
