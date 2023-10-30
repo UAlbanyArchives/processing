@@ -87,7 +87,7 @@ warningList = []
 for sheetFile in os.listdir(metadata):
     if sheetFile.lower().endswith(".xlsx") and not sheetFile.lower().startswith("~$"):
         if not args.file or args.file.lower() == sheetFile.lower():
-            outfileName = os.path.splitext(sheetFile)[0] + ".tsv"
+            outfileName = os.path.join(metadata, os.path.splitext(sheetFile)[0] + ".tsv")
             sheetCount += 1
             print ("Reading sheet: " + sheetFile)
             sheetPath = os.path.join(metadata, sheetFile)
@@ -155,7 +155,7 @@ for sheetFile in os.listdir(metadata):
                                     "", "", "", "", "whole", processingNote, "", ""]
                                     
                                     hyraxSheet.append(hyraxObject)
-                                
+            print (f"Writing to {outfileName}...")                 
             if os.path.isfile(outfileName):
                 outfile = open(outfileName, "a", encoding='utf-8', newline='')
                 writer = csv.writer(outfile, delimiter='\t', lineterminator='\n')
