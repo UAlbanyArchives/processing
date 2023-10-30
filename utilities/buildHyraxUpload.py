@@ -83,6 +83,7 @@ def convertIDs(parentURIs):
     return parentIDs
 
 sheetCount = 0
+objectCount = 0
 warningList = [] 
 for sheetFile in os.listdir(metadata):
     if sheetFile.lower().endswith(".xlsx") and not sheetFile.lower().startswith("~$"):
@@ -153,8 +154,9 @@ for sheetFile in os.listdir(metadata):
                                     
                                     hyraxObject = ["DAO", "", row[22].value, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
                                     "", "", "", "", "whole", processingNote, "", ""]
-                                    
                                     hyraxSheet.append(hyraxObject)
+                                    objectCount += 1
+
             print (f"Writing to {outfileName}...")                 
             if os.path.isfile(outfileName):
                 outfile = open(outfileName, "a", encoding='utf-8', newline='')
@@ -174,6 +176,8 @@ if len(warningList) > 0:
 
 if sheetCount == 0:
     print ("Error: No asInventory spreadsheet found. Could not build Hyrax upload sheet.")
+elif objectCount == 0:
+    print ("Error: Did not find any objects to upload in sheets. Requires ref_id, title, display date, and DAO path.")
 else:
-    print ("Complete!")
+    print (f"Complete! Created {sheetCount} sheets with {objectCount} total objects.")
     print (f"Finished at {datetime.now()}")
