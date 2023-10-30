@@ -27,7 +27,8 @@ hyraxHeaders = ["Type", "URIs", "File Paths", "Accession", "Collecting Area", "C
 "Record Parents", "Title", "Description", "Date Created", "Resource Type", "License", "Rights Statement", "Subjects", "Whole/Part",\
 "Processing Activity", "Extent", "Language"]
 
-hyraxSheetFile = os.path.join(metadata, args.package + ".tsv")
+# no longer writes to single sheet file, but creates .tsvs for each asInventory spreadsheet
+#hyraxSheetFile = os.path.join(metadata, args.package + ".tsv")
 #hyraxImport = os.path.join(ESPYderivatives, "import")
 #hyraxFiles = os.path.join(ESPYderivatives, "files", colID)
 #if not os.path.isdir(hyraxFiles):
@@ -86,6 +87,7 @@ warningList = []
 for sheetFile in os.listdir(metadata):
     if sheetFile.lower().endswith(".xlsx") and not sheetFile.lower().startswith("~$"):
         if not args.file or args.file.lower() == sheetFile.lower():
+            outfileName = os.path.splitext(sheetFile)[0] + ".tsv"
             sheetCount += 1
             print ("Reading sheet: " + sheetFile)
             sheetPath = os.path.join(metadata, sheetFile)
@@ -154,17 +156,17 @@ for sheetFile in os.listdir(metadata):
                                     
                                     hyraxSheet.append(hyraxObject)
                                 
-if os.path.isfile(hyraxSheetFile):
-    outfile = open(hyraxSheetFile, "a", encoding='utf-8', newline='')
-    writer = csv.writer(outfile, delimiter='\t', lineterminator='\n')
-else:
-    outfile = open(hyraxSheetFile, "w", encoding='utf-8', newline='')
-    writer = csv.writer(outfile, delimiter='\t', lineterminator='\n')
-    writer.writerow(hyraxHeaders)
-for object in hyraxSheet:
-    #print (object[9])
-    writer.writerow(object)
-outfile.close()
+            if os.path.isfile(outfileName):
+                outfile = open(outfileName, "a", encoding='utf-8', newline='')
+                writer = csv.writer(outfile, delimiter='\t', lineterminator='\n')
+            else:
+                outfile = open(outfileName, "w", encoding='utf-8', newline='')
+                writer = csv.writer(outfile, delimiter='\t', lineterminator='\n')
+                writer.writerow(hyraxHeaders)
+            for object in hyraxSheet:
+                #print (object[9])
+                writer.writerow(object)
+            outfile.close()
 
 if len(warningList) > 0:
     print ("WARNING: the following files were not found in package:")
