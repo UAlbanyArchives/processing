@@ -4,6 +4,7 @@ from PIL import Image
 from pypdf import PdfReader, PdfWriter
 from datetime import datetime
 from subprocess import Popen, PIPE
+from pathlib import PureWindowsPath, PurePosixPath
 
 processingDir = "/backlog"
 
@@ -34,10 +35,13 @@ def process(cmd):
     if len(stderr) > 0:
         print (stderr.decode())
     return p.returncode
-
-
+    
 if args.path:
-    ocrPath = os.path.join(derivatives, os.path.normpath(args.path))
+    if "\\" in args.path:
+        winPath = PureWindowsPath(args.path)
+        ocrPath = str(PurePosixPath(derivatives, *winPath.parts))
+    else:
+        ocrPath = os.path.join(derivatives, os.path.normpath(args.path))
     if not os.path.isdir(derivatives):
         raise Exception("ERROR: subpath " + args.path + " relative to derivatives is not a valid path.")
 else:

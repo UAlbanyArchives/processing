@@ -4,6 +4,7 @@ import img2pdf
 import argparse
 from datetime import datetime
 from subprocess import Popen, PIPE
+from pathlib import PureWindowsPath, PurePosixPath
 
 processingDir = "/backlog"
 if os.name == 'nt':
@@ -64,7 +65,11 @@ else:
     format2 = "." + str(args.input)
     
 if args.path:
-    masters = os.path.join(masters, os.path.normpath(args.path))
+    if "\\" in args.path:
+        winPath = PureWindowsPath(args.path)
+        masters = str(PurePosixPath(masters, *winPath.parts))
+    else:
+        masters = os.path.join(masters, os.path.normpath(args.path))
     if not os.path.isdir(masters):
         raise Exception("ERROR: subpath " + args.path + " relative to masters is not a valid path.")
 
