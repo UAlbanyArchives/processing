@@ -30,15 +30,15 @@ finalMetadata = []
 # No longer reads from package-ID.tsv, instead creates it from all .tsv files
 #if not os.path.isfile(hyraxImport):
 #    raise ValueError(f"ERROR: {hyraxImport} is missing or not a valid hyrax import TSV.")
-sheetFiles = []
+tsvFiles = []
 for tsv in os.listdir(metadata):
     if not tsv == args.package + ".tsv":
         if tsv.lower().endswith(".tsv"):
-            sheetFiles.append(os.path.join(metadata, tsv))
+            tsvFiles.append(os.path.join(metadata, tsv))
 
 if args.file and not os.path.isfile(os.path.join(metadata, args.file)):
     raise ValueError(f"ERROR: {args.file} is missing.")
-elif args.file and args.file.endswith(".xlsx"):
+elif args.file and not args.file.lower().endswith(".xlsx"):
     raise ValueError(f"ERROR: {args.file} is not a valid asInventory spreadsheet.")
 
 sheetCount = 0
@@ -92,7 +92,7 @@ for sheetFile in os.listdir(metadata):
                                     refID = row[0].value
                                     match = False
                                     
-                                    for tsv in sheetFiles:
+                                    for tsv in tsvFiles:
                                         file = open(tsv, "r")
                                         reader = csv.reader(file, delimiter='\t')
                                         for line in reader:
