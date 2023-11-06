@@ -36,7 +36,7 @@ for tsv in os.listdir(metadata):
         if tsv.lower().endswith(".tsv"):
             sheetFiles.append(os.path.join(metadata, tsv))
 
-if args.file and not os.path.isfile(metadata, os.path.join(args.file)):
+if args.file and not os.path.isfile(os.path.join(metadata, args.file)):
     raise ValueError(f"ERROR: {args.file} is missing.")
 elif args.file and args.file.endswith(".xlsx"):
     raise ValueError(f"ERROR: {args.file} is not a valid asInventory spreadsheet.")
