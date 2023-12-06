@@ -238,6 +238,7 @@ def buildHyraxUpload():
         form = HyraxUploadForm(request.form)
         packageID = form.packageID.data.strip()
         fileLimiter = form.file.data
+        combine_multiple = form.combine_multiple.data
 
         if not form.validate():
             flash(form.errors, 'error')
@@ -246,6 +247,8 @@ def buildHyraxUpload():
             command = f"python -u /code/utilities/buildHyraxUpload.py {packageID}"
             if fileLimiter:
                 command = command + f" -f \"{fileLimiter.strip()}\""
+            if combine_multiple:
+                command = command + f" -c"
             command = command + f" >> {log_file} 2>&1 &"
 
             #print ("running command: " + command)

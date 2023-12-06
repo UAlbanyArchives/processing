@@ -10,6 +10,7 @@ from asnake.client import ASnakeClient
 argParse = argparse.ArgumentParser()
 argParse.add_argument("package", help="Package ID in Processing directory.")
 argParse.add_argument("-f", "--file", help="File name of spreadsheet to be updated. If no files are listed, all will be updated.", default=None)
+argParse.add_argument("-c", "--combine", help="When a directory is provided or a DAO that contains multiple files, this combines files into a single digital object in Hyrax. Without this option, the defalt is to have multiple digital objects in ArchivesSpace that each point to a single file in Hyrax.", action="store_true")
 args = argParse.parse_args()
 
 processingDir = "/backlog"
@@ -150,28 +151,51 @@ for sheetFile in os.listdir(metadata):
                                     masterDao = os.path.join(masters, row[22].value)
                                     if os.path.isfile(derivativesDao) or os.path.isfile(masterDao):
                                         dao_path = row[22].value
+
+                                        hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
+                                        "", "", "", "", "whole", processingNote, "", ""]
+                                        hyraxSheet.append(hyraxObject)
+                                        objectCount += 1
                                     elif os.path.isdir(derivativesDao) or os.path.isdir(masterDao):
                                         excluded_files = ["thumbs.db", "desktop.ini", ".ds_store"]
-                                        dao_files = []
-                                        if os.path.isdir(derivativesDao):
-                                            for dao_file in os.listdir(derivativesDao):
-                                                if not dao_file.lower() in excluded_files:
-                                                    dao_files.append(dao_file)
+                                        if not combine_multiple:
+                                            fileList = []
+                                            if os.path.isdir(derivativesDao):
+                                                for dao_file in os.listdir(derivativesDao):
+                                                    fileList.append(os.path.join (row[22].value, dao_file))
+                                            if os.path.isdir(masterDao):
+                                                for dao_file in os.listdir(masterDao):
+                                                    fileList.append(os.path.join (row[22].value, dao_file))
+                                            for dao_path in fileList:
+                                                hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
+                                                "", "", "", "", "whole", processingNote, "", ""]
+                                                hyraxSheet.append(hyraxObject)
+                                                objectCount += 1
                                         else:
-                                            for dao_file in os.listdir(masterDao):
-                                                if not dao_file.lower() in excluded_files:
-                                                    dao_files.append(dao_file)
-                                        dao_path = "|".join(dao_files)
+                                            dao_files = []
+                                            if os.path.isdir(derivativesDao):
+                                                for dao_file in os.listdir(derivativesDao):
+                                                    if not dao_file.lower() in excluded_files:
+                                                        dao_files.append(dao_file)
+                                            else:
+                                                for dao_file in os.listdir(masterDao):
+                                                    if not dao_file.lower() in excluded_files:
+                                                        dao_files.append(dao_file)
+                                            dao_path = "|".join(dao_files)
+
+                                            hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
+                                            "", "", "", "", "whole", processingNote, "", ""]
+                                            hyraxSheet.append(hyraxObject)
+                                            objectCount += 1
                                     else:
                                         print ("WARNING: DAO filename \"" + row[22].value + "\" does not exist in package.")
                                         warningList.append(row[22].value)
                                         dao_path = row[22].value
                                     
-                                    
-                                    hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
-                                    "", "", "", "", "whole", processingNote, "", ""]
-                                    hyraxSheet.append(hyraxObject)
-                                    objectCount += 1
+                                        hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
+                                        "", "", "", "", "whole", processingNote, "", ""]
+                                        hyraxSheet.append(hyraxObject)
+                                        objectCount += 1
 
             print (f"Writing to {outfileName}...")                 
             if os.path.isfile(outfileName):
