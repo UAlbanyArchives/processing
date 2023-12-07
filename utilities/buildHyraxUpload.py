@@ -158,7 +158,7 @@ for sheetFile in os.listdir(metadata):
                                         objectCount += 1
                                     elif os.path.isdir(derivativesDao) or os.path.isdir(masterDao):
                                         excluded_files = ["thumbs.db", "desktop.ini", ".ds_store"]
-                                        if not combine:
+                                        if not args.combine:
                                             fileList = []
                                             if os.path.isdir(derivativesDao):
                                                 for dao_file in os.listdir(derivativesDao):
