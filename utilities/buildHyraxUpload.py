@@ -176,11 +176,11 @@ for sheetFile in os.listdir(metadata):
                                             if os.path.isdir(derivativesDao):
                                                 for dao_file in os.listdir(derivativesDao):
                                                     if not dao_file.lower() in excluded_files:
-                                                        dao_files.append(dao_file)
+                                                        dao_files.append(os.path.join(row[22].value, dao_file))
                                             else:
                                                 for dao_file in os.listdir(masterDao):
                                                     if not dao_file.lower() in excluded_files:
-                                                        dao_files.append(dao_file)
+                                                        dao_files.append(os.path.join(row[22].value, dao_file))
                                             dao_path = "|".join(dao_files)
 
                                             hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
