@@ -23,7 +23,7 @@ RUN apt install poppler-utils -y
 RUN apt install tzdata -y
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt install rsync imagemagick -y
+RUN apt install rsync imagemagick poppler-utils -y
 RUN rm /etc/ImageMagick-6/policy.xml
 COPY conf/policy.xml /etc/ImageMagick-6/policy.xml
 
