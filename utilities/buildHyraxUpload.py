@@ -28,6 +28,16 @@ hyraxHeaders = ["Type", "URIs", "File Paths", "Accession", "Collecting Area", "C
 "Record Parents", "Title", "Description", "Date Created", "Resource Type", "License", "Rights Statement", "Subjects", "Whole/Part",\
 "Processing Activity", "Extent", "Language"]
 
+# For human readable directory sizes
+# HT https://stackoverflow.com/questions/1094841/get-human-readable-version-of-file-size
+def sizeof_fmt(num, suffix="B"):
+    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
+        if abs(num) < 1024.0:
+            return f"{num:3.1f} {unit}{suffix}"
+        num /= 1024.0
+    return f"{num:.1f}Yi{suffix}"
+
+
 # no longer writes to single sheet file, but creates .tsvs for each asInventory spreadsheet
 #hyraxSheetFile = os.path.join(metadata, args.package + ".tsv")
 #hyraxImport = os.path.join(ESPYderivatives, "import")
@@ -173,18 +183,35 @@ for sheetFile in os.listdir(metadata):
                                                 objectCount += 1
                                         else:
                                             dao_files = []
+                                            dao_file_count = 0
+                                            dao_extent = ""
                                             if os.path.isdir(derivativesDao):
                                                 for dao_file in os.listdir(derivativesDao):
                                                     if not dao_file.lower() in excluded_files:
-                                                        dao_files.append(os.path.join(row[22].value, dao_file))
+                                                        dao_file_count += 1
+                                                        #print (os.path.join(row[22].value, dao_file))
+                                                        if dao_file_count < 301:
+                                                            dao_files.append(os.path.join(row[22].value, dao_file))
+                                                nbytes = sum(d.stat().st_size for d in os.scandir(derivativesDao) if d.is_file())
+                                                dao_extent = sizeof_fmt(nbytes)
                                             else:
                                                 for dao_file in os.listdir(masterDao):
                                                     if not dao_file.lower() in excluded_files:
-                                                        dao_files.append(os.path.join(row[22].value, dao_file))
+                                                        dao_file_count += 1
+                                                        if dao_file_count < 301:
+                                                            dao_files.append(os.path.join(row[22].value, dao_file))
+                                                nbytes = sum(d.stat().st_size for d in os.scandir(masterDao) if d.is_file())
+                                                dao_extent = sizeof_fmt(nbytes)
                                             dao_path = "|".join(dao_files)
 
+                                            extents = [str(dao_file_count) + " Digital Files"]
+                                            if len(dao_extent) > 0:
+                                                extents.append(dao_extent)
+                                            if dao_file_count > 300:
+                                                extents.append("Due to technical limitations, only the first 300 files will be displayed. Please contact us to access similar images.")
+
                                             hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
-                                            "", "", "", "", "whole", processingNote, "", ""]
+                                            "", "", "", "", "whole", processingNote, "|".join(extents), ""]
                                             hyraxSheet.append(hyraxObject)
                                             objectCount += 1
                                     else:
@@ -200,10 +227,10 @@ for sheetFile in os.listdir(metadata):
             print (f"Writing to {outfileName}...")                 
             if os.path.isfile(outfileName):
                 outfile = open(outfileName, "a", encoding='utf-8', newline='')
-                writer = csv.writer(outfile, delimiter='\t', lineterminator='\n')
+                writer = csv.writer(outfile, delimiter='\t', lineterminator='\n', quotechar = "\"", quoting=csv.QUOTE_ALL)
             else:
                 outfile = open(outfileName, "w", encoding='utf-8', newline='')
-                writer = csv.writer(outfile, delimiter='\t', lineterminator='\n')
+                writer = csv.writer(outfile, delimiter='\t', lineterminator='\n', quotechar = "\"", quoting=csv.QUOTE_ALL)
                 writer.writerow(hyraxHeaders)
             for object in hyraxSheet:
                 #print (object[9])
