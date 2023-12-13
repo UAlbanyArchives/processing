@@ -83,11 +83,11 @@ for sheetFile in os.listdir(metadata):
                                     daoPath = row[22].value
                                 filePathDerivatives = os.path.join(derivatives, daoPath)
                                 filePathMasters = os.path.join(masters, daoPath)
-                                if os.path.isfile(filePathDerivatives):
+                                if os.path.exists(filePathDerivatives):
                                     filePath = filePathDerivatives
                                 else:
                                     filePath = filePathMasters
-                                if os.path.isfile(filePath):
+                                if os.path.exists(filePath):
                             
                                     refID = row[0].value
                                     match = False
