@@ -58,8 +58,6 @@ collectingArea = collectionData["data"]["attributes"]["repository_ssm"]["attribu
 collection = collectionData["data"]["attributes"]["title_ssm"]["attributes"]["value"][0]
 processingNote = "Processing documentation available at: https://wiki.albany.edu/display/SCA/Processing+Ingested+Digital+Files"
 
-# make hyrax sheet
-hyraxSheet = []
 
 def getParentURIs(obj, objURI, parentList=None):
     """Recursuvely goes thorugh ASpace tree and finds matching URI and returns a list of parents
@@ -104,6 +102,9 @@ for sheetFile in os.listdir(metadata):
             print ("Reading sheet: " + sheetFile)
             sheetPath = os.path.join(metadata, sheetFile)
             wb = openpyxl.load_workbook(filename=sheetPath, read_only=True)
+
+            # make hyrax sheet
+            hyraxSheet = []
             
             #validate sheets
             for sheet in wb.worksheets:
