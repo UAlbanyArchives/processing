@@ -173,10 +173,12 @@ for sheetFile in os.listdir(metadata):
                                             fileList = []
                                             if os.path.isdir(derivativesDao):
                                                 for dao_file in os.listdir(derivativesDao):
-                                                    fileList.append(os.path.join (row[22].value.strip(), dao_file))
+                                                    if os.path.isfile(os.path.join(derivativesDao, dao_file)):
+                                                        fileList.append(os.path.join (row[22].value.strip(), dao_file))
                                             if os.path.isdir(masterDao):
                                                 for dao_file in os.listdir(masterDao):
-                                                    fileList.append(os.path.join (row[22].value.strip(), dao_file))
+                                                    if os.path.isfile(os.path.join(masterDao, dao_file)):
+                                                        fileList.append(os.path.join (row[22].value.strip(), dao_file))
                                             for dao_path in fileList:
                                                 hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
                                                 "", "", "", "", "whole", processingNote, "", ""]
@@ -188,19 +190,21 @@ for sheetFile in os.listdir(metadata):
                                             dao_extent = ""
                                             if os.path.isdir(derivativesDao):
                                                 for dao_file in os.listdir(derivativesDao):
-                                                    if not dao_file.lower() in excluded_files:
-                                                        dao_file_count += 1
-                                                        #print (os.path.join(row[22].value, dao_file))
-                                                        if dao_file_count < 301:
-                                                            dao_files.append(os.path.join(row[22].value.strip(), dao_file))
+                                                    if os.path.isfile(os.path.join(derivativesDao, dao_file)):
+                                                        if not dao_file.lower() in excluded_files:
+                                                            dao_file_count += 1
+                                                            #print (os.path.join(row[22].value, dao_file))
+                                                            if dao_file_count < 301:
+                                                                dao_files.append(os.path.join(row[22].value.strip(), dao_file))
                                                 nbytes = sum(d.stat().st_size for d in os.scandir(derivativesDao) if d.is_file())
                                                 dao_extent = sizeof_fmt(nbytes)
                                             else:
                                                 for dao_file in os.listdir(masterDao):
-                                                    if not dao_file.lower() in excluded_files:
-                                                        dao_file_count += 1
-                                                        if dao_file_count < 301:
-                                                            dao_files.append(os.path.join(row[22].value.strip(), dao_file))
+                                                    if os.path.isfile(os.path.join(masterDao, dao_file)):
+                                                        if not dao_file.lower() in excluded_files:
+                                                            dao_file_count += 1
+                                                            if dao_file_count < 301:
+                                                                dao_files.append(os.path.join(row[22].value.strip(), dao_file))
                                                 nbytes = sum(d.stat().st_size for d in os.scandir(masterDao) if d.is_file())
                                                 dao_extent = sizeof_fmt(nbytes)
                                             dao_path = "|".join(dao_files)
