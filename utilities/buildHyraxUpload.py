@@ -160,7 +160,11 @@ for sheetFile in os.listdir(metadata):
                                     
                                     derivativesDao = os.path.join(derivatives, row[22].value)
                                     masterDao = os.path.join(masters, row[22].value)
+                                    print (masters)
+                                    print (row[22].value)
+                                    print (masterDao)
                                     if os.path.isfile(derivativesDao) or os.path.isfile(masterDao):
+                                        print ("yes is file")
                                         dao_path = row[22].value
 
                                         hyraxObject = ["DAO", "", dao_path, args.package, collectingArea, colID, collection, refID, parents, title, "", date, \
@@ -168,6 +172,7 @@ for sheetFile in os.listdir(metadata):
                                         hyraxSheet.append(hyraxObject)
                                         objectCount += 1
                                     elif os.path.isdir(derivativesDao) or os.path.isdir(masterDao):
+                                        print ("yes is dir")
                                         excluded_files = ["thumbs.db", "desktop.ini", ".ds_store"]
                                         if not args.combine:
                                             fileList = []
@@ -216,6 +221,7 @@ for sheetFile in os.listdir(metadata):
                                             hyraxSheet.append(hyraxObject)
                                             objectCount += 1
                                     else:
+                                        print ("no")
                                         print ("WARNING: DAO filename \"" + row[22].value + "\" does not exist in package.")
                                         warningList.append(row[22].value)
                                         dao_path = row[22].value
