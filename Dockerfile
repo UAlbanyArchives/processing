@@ -32,7 +32,6 @@ COPY conf/policy.xml /etc/ImageMagick-6/policy.xml
 RUN pip install -r requirements.txt
 
 COPY .archivessnake.yml /root
-COPY .hyrax.yml /root
 COPY . /code
 RUN ["chmod", "+x", "./gunicorn.sh"]
 

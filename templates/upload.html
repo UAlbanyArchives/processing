@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+{% set active = "upload" %}
+{% block title %}Upload{% endblock %}
+{% block content %}
+  <h1>Upload</h1>
+  <div class="h5">
+    Hey, lets upload a digital object!
+  </div>
+
+  <div class="h5">
+    <a href="https://wiki.albany.edu/display/SCA/Ingesting+Digital+Materials">Wiki documentation</a>
+  </div>
+
+  <form action="/upload" method="post">
+
+    <div class="mb-3">
+      <label for="packageID" class="form-label">Package ID</label>
+      <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+      <label for="inputFormat" class="form-label">Input format</label>
+        <select class="form-select" name="inputFormat" id="inputFormat" aria-describedby="inputFormatHelp">
+          <option value="png">png</option>
+          <option value="tif">tif</option>
+          <option value="jpg">jpg</option>
+          <option value="pdf">pdf</option>
+        </select>
+        <div id="inputFormatHelp" class="form-text">File extension to upload, such as PNG, TIF, or PDF.</div>
+      </div>
+      <div class="col">
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="checkSubpath"  onclick="enableSubpath()">
+          <label class="form-check-label" for="checkSubpath">Use subpath</label>
+        </div>
+
+        <div class="mb-3">
+          <label for="subpath" class="form-label">Sub path (optional)</label>
+          <input class="form-control" name="subPath" id="subpath" aria-describedby="subPathHelp" disabled>
+          <div id="subPathHelp" class="form-text">Only uploads files in this folder within the /backlog package.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="mb-3">
+      <label for="refID" class="form-label">ArchivesSpace ref_id</label>
+      <input type="refID" class="form-control" name="refID" id="refID" aria-describedby="idHelp">
+      <div id="idHelp" class="form-text">A 32 character ArchivesSpace ID, Such as "4b8ed2a1cb44060e0fc7fa6fc8ca6018."</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="resource_type" class="form-label">Resource type</label>
+      <select class="form-select" name="resource_type" id="resource_type" aria-describedby="resource_typeHelp">
+        <option value="Document">Document</option>
+        <option value="Audio">Audio</option>
+        <option value="Bound Volume">Bound Volume</option>
+        <option value="Dataset">Dataset</option>
+        <option value="Image">Image</option>
+        <option value="Map">Map</option>
+        <option value="Mixed Materials">Mixed Materials (avoid)</option>
+        <option value="Pamphlet">Pamphlet</option>
+        <option value="Periodical">Periodical</option>
+        <option value="Slides">Slides</option>
+        <option value="Video">Video</option>
+        <option value="Other">Other (avoid)</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="license" class="form-label">License</label>
+      <select class="form-select" name="license" id="license" aria-describedby="licenseHelp">
+        <option value="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA</option>
+        <option value="https://creativecommons.org/licenses/by/4.0/">CC BY</option>
+        <option value="https://creativecommons.org/publicdomain/zero/1.0/">Public Domain</option>
+        <option value="Unknown">Unknown</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="rights_statement" class="form-label">Rights Statement</label>
+      <select class="form-select" name="rights_statement" id="rights_statement" aria-describedby="rights_statementHelp">
+        <option value=""></option>
+        <option value="https://rightsstatements.org/page/InC-EDU/1.0/">In Copyright - Educational Use Permitted</option>
+      </select>
+      <div id="rights_statementHelp" class="form-text">Whether the digital object represents the whole or only part of the ArchivesSpace archival object referanced by the ref_id.</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="behavior" class="form-label">Behavior</label>
+      <select class="form-select" name="behavior" id="behavior" aria-describedby="behaviorHelp">
+        <option value="paged">paged</option>
+        <option value="individuals">individuals</option>
+      </select>
+      <div id="behaviorHelp" class="form-text">Set the <a href="https://iiif.io/api/cookbook/recipe/0011-book-3-behavior/">behavior for the IIIF object</a>.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+
+{% endblock %}
