@@ -12,6 +12,7 @@ services:
       - '/media/Library/SPE_Automated/DigitizationExtentTracker:/DigitizationExtentTracker'
       - '/media/Library/SPE_Processing/backlog:/backlog'
       - '/media/Library/SPE_Processing/ingest:/ingest'
+      - '/media/Library/SPE_DAO/a_testing:/SPE_DAO'
       - '/media/Library/SPE_Automated/processing_logs:/logs'
     tty: true
     stdin_open: true

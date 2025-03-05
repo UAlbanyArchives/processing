@@ -19,6 +19,7 @@ RUN wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add -
 RUN apt update
 RUN aptitude install tesseract-ocr -y
 RUN apt install poppler-utils -y
+RUN apt install libvips-tools -y
 
 RUN apt install tzdata -y
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -32,6 +33,7 @@ COPY conf/policy.xml /etc/ImageMagick-6/policy.xml
 RUN pip install -r requirements.txt
 
 COPY .archivessnake.yml /root
+COPY .iiiflow.yml /root
 COPY . /code
 RUN ["chmod", "+x", "./gunicorn.sh"]
 

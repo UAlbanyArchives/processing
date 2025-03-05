@@ -1,6 +1,5 @@
-from wtforms import Form, StringField, validators
+from wtforms import Form, StringField, SelectField, TextAreaField, BooleanField, validators
 from wtforms.validators import DataRequired, AnyOf
-from wtforms import SelectField
 from forms.custom_validators import validate_packageID, validate_refID
 
 class UploadForm(Form):
@@ -8,6 +7,8 @@ class UploadForm(Form):
     inputFormat = StringField('Input Path', [validators.Length(min=3, max=3)])
     subPath = StringField('Sub Path', [validators.Length(min=0, max=99)])
     refID = StringField('Ref ID', [validators.Length(min=32, max=32), validate_refID])
+    createPDF = BooleanField("Include PDF", default=True)
+    content_warning = TextAreaField("Content Warning")
 
     resource_type = SelectField(
         "Resource Type",

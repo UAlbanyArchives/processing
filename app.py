@@ -211,6 +211,8 @@ def upload():
         license = form.license.data.strip()
         rights_statement = form.rights_statement.data.strip()
         behavior = form.behavior.data.strip()
+        createPDF = str(form.createPDF.data)
+        content_warning = form.content_warning.data.strip() if form.content_warning.data else ""
 
         if not form.validate():
             flash(form.errors, 'error')
@@ -223,6 +225,7 @@ def upload():
                 "--packageID", packageID,
                 "--input_format", inputFormat,
                 "--refID", refID,
+                "--PDF", createPDF,
                 "--resource_type", resource_type,
                 "--behavior", behavior
             ]
@@ -237,6 +240,9 @@ def upload():
             if rights_statement:
                 command.append("--rights_statement")
                 command.append(rights_statement)
+            if content_warning:
+                command.append("--processing")
+                command.append(content_warning)
 
             safe_command = " ".join(shlex.quote(arg) for arg in command) + f" >> {shlex.quote(log_file)} 2>&1 &"
             #print ("running command: " + safe_command)
@@ -246,6 +252,13 @@ def upload():
             flash(success_msg, 'success')
             return redirect(url_for('upload'))
     return render_template('upload.html', error=error)
+
+@app.route('/bulk_upload', methods=['GET', 'POST'])
+def bulk_upload():
+    error = None
+    if request.method == 'POST':
+        return redirect(url_for('bulk_upload'))
+    return render_template('bulk_upload.html', error=error)
 
 @app.route('/aspace', methods=['GET', 'POST'])
 def aspace():
