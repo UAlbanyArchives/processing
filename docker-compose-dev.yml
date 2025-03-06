@@ -27,7 +27,7 @@ services:
               wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add - &&
               apt update &&
               aptitude install tesseract-ocr -y &&
-              apr install libvips-tools -y &&
+              apt install libvips-tools -y &&
               apt install tzdata -y &&
               apt install rsync imagemagick -y &&
               rm /etc/ImageMagick-6/policy.xml &&

@@ -15,10 +15,13 @@ from forms.ocr import OcrForm
 from forms.upload import UploadForm
 from forms.aspace import AspaceForm
 from forms.package import PackageForm
+from forms.add_items import AddItemsForm
+from forms.recreate import RecreateForm
 from forms.bulk import HyraxUploadForm, ASpaceUpdateForm
 
 from utilities.listFiles import listFiles
 from aspaceDAO import addDAO
+from add_items import add_aspace_items
 from hyrax import addAccession
 
 import csv
@@ -252,6 +255,94 @@ def upload():
             flash(success_msg, 'success')
             return redirect(url_for('upload'))
     return render_template('upload.html', error=error)
+
+@app.route('/add_items', methods=['GET', 'POST'])
+def add_items():
+    error = None
+    if request.method == 'POST':
+        form = AddItemsForm(request.form)
+        
+        # Prevent AttributeError by ensuring `.data` isn't None
+        refID = form.refID.data.strip() if form.refID.data else ''
+        title_1 = form.title_1.data.strip() if form.title_1.data else ''
+        display_date_1 = form.display_date_1.data.strip() if form.display_date_1.data else ''
+        normal_date_1 = form.normal_date_1.data.strip() if form.normal_date_1.data else ''
+        title_2 = form.title_2.data.strip() if form.title_2.data else ''
+        display_date_2 = form.display_date_2.data.strip() if form.display_date_2.data else ''
+        normal_date_2 = form.normal_date_2.data.strip() if form.normal_date_2.data else ''
+
+        # Validate form
+        if not form.validate():
+            flash(str(form.errors), 'error')
+        else:
+            res1, res2 = add_aspace_items(refID, title_1, display_date_1, normal_date_1, title_2, display_date_2, normal_date_2)
+
+            errors = []
+            success_messages = []
+
+            # Handle res1
+            if res1.status_code == 200:
+                item1_id = res1.json().get('id', 'Unknown ID')
+                success_messages.append(f"Item 1 added successfully with ID: {item1_id}")
+            else:
+                error_message = res1.json().get('error', 'Unknown error')
+                errors.append(f"Item 1 failed: {error_message} (Status {res1.status_code})")
+
+            # Handle res2
+            if res2.status_code == 200:
+                item2_id = res2.json().get('id', 'Unknown ID')
+                success_messages.append(f"Item 2 added successfully with ID: {item2_id}")
+            else:
+                error_message = res2.json().get('error', 'Unknown error')
+                errors.append(f"Item 2 failed: {error_message} (Status {res2.status_code})")
+            
+            # Flash errors and success messages
+            if errors:
+                e_obj = {}
+                e_count = 0
+                for e in errors:
+                    e_obj[e] = e
+                    e_count += 1
+                flash(e_obj, 'error')
+
+            if success_messages:
+                flash(Markup("<br>".join(success_messages)), 'success')
+
+        return redirect(url_for('add_items'))
+
+    return render_template('add_items.html', error=error)
+
+
+@app.route('/recreate', methods=['GET', 'POST'])
+def recreate():
+    error = None
+    if request.method == 'POST':
+        form = RecreateForm(request.form)
+        mode = form.mode.data
+        collectionID = form.collectionID.data.strip()
+        refID = form.refID.data.strip()
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-recreate-{mode}-{collectionID}.log"
+
+            command = [
+                "python", "-u", "/code/utilities/recreate.py",
+                mode,
+                "--collectionID", collectionID,
+                "--refID", refID
+            ]
+
+            safe_command = " ".join(shlex.quote(arg) for arg in command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            #print ("running command: " + safe_command)
+            thumbnail = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+        
+        return redirect(url_for('recreate'))
+    return render_template('recreate.html', error=error)
 
 @app.route('/bulk_upload', methods=['GET', 'POST'])
 def bulk_upload():

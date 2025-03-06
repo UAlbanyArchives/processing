@@ -11,6 +11,11 @@ def validate_collectionID(form, field):
     if not field.data.strip() in available_collections:
         raise validators.ValidationError(f'Error: Nothing to ingest for {field.data.strip()}. No folder in ingest path  \\\\Lincoln\\Library\\SPE_Processing\\ingest\\{field.data.strip()}.')
 
+def validate_collectionID_DAO(form, field):
+    available_collections = os.listdir("/SPE_DAO")
+    if not field.data.strip() in available_collections:
+        raise validators.ValidationError(f'Error: No Digital Object for {field.data.strip()}. No folder in SPE_DAO path  \\\\Lincoln\\Library\\SPE_DAO\\{field.data.strip()}.')
+
 def validate_accessionID(form, field):
     # check if accession exists in ASpace
     call = "repositories/2/search?page=1&aq={\"query\":{\"field\":\"identifier\", \"value\":\"" + field.data.strip() + "\", \"jsonmodel_type\":\"field_query\"}}"

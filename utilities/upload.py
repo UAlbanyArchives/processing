@@ -1,5 +1,6 @@
 import os
 import yaml
+import uuid
 import shutil
 import iiiflow
 import argparse
@@ -43,7 +44,7 @@ def main():
     args = parser.parse_args()
     processingDir = "/backlog"
 
-    print("Uploading Digital Object with the following details:")
+    print("Uploading Digital Object with the following entries:")
     print(f"  Package ID: {args.packageID}")
     print(f"  Input format: {args.input_format}")
     print(f"  Sub Path: {args.subPath if args.subPath else 'N/A'}")
@@ -87,16 +88,22 @@ def main():
     if collection_ID != args.packageID.split("_")[0]:
         raise ValueError(f"ERROR: Collection ID in package ID does not match the collection linked to this ArchivesSpace ref_id.")
 
+    manifest_label = item["title"]
+    for date in item["dates"]:
+        manifest_label = manifest_label + f", {date['expression']}"
+    metadata["manifest_label"] = manifest_label
+
     collection_path = os.path.join("/SPE_DAO", collection_ID)
     object_path = os.path.join(collection_path, args.refID)
     metadata_path = os.path.join(object_path, "metadata.yml")
-    with open(metadata_path, "w", encoding="utf-8") as metadata_file:
-        yaml.dump(metadata, metadata_file)
 
     if not os.path.isdir(collection_path):
         os.mkdir(collection_path)
     if not os.path.isdir(object_path):
         os.mkdir(object_path)
+
+    with open(metadata_path, "w", encoding="utf-8") as metadata_file:
+        yaml.dump(metadata, metadata_file)
 
     package_path = os.path.join(processingDir, collection_ID, args.packageID)
     masters = os.path.join(package_path, "masters")
@@ -124,14 +131,12 @@ def main():
         if os.path.isfile(input_file_path) and input_file.endswith(f".{args.input_format.lower()}"):
             masters_count += 1
             file_list.append(input_file_path)
-            print (f"Processing {input_file}")
     if masters_count == 0:
         for input_file in os.listdir(derivatives):
             input_file_path = os.path.join(derivatives, input_file)
             if os.path.isfile(input_file_path) and input_file.endswith(f".{args.input_format.lower()}"):
                 derivatives_count += 1
                 file_list.append(input_file_path)
-                print (f"Processing {input_file}")
 
     if masters_count == 0 and derivatives_count == 0:
         raise FileNotFoundError(f"ERROR: no {args.input_format.lower()} files found in package {args.packageID} masters or derivatives.")
@@ -187,7 +192,63 @@ def main():
     # Create manifest
     print ("Generating IIIF manifest...")
     iiiflow.create_manifest(collection_ID, args.refID)
-    
+
+    print ("Adding digital object record to ArchivesSpace...")
+
+    # get url root from iiiflow config
+    with open("/root/.iiiflow.yml", "r") as config_file:
+        config = yaml.safe_load(config_file)
+    manifest_url_root = config.get("manifest_url_root")
+    dao_url = f"{manifest_url_root}/{collection_ID}/{args.refID}/manifest.json"
+
+    file_version = {
+        "jsonmodel_type": "file_version",
+        "publish": True,
+        "is_representative": True,
+        "file_uri": dao_url,
+        "use_statement": "",
+        "xlink_actuate_attribute": "none",
+        "xlink_show_attribute": "embed",
+    }
+    dao_uuid = str(uuid.uuid4())
+    dao_title = "Online object uploaded typically on user request."
+
+    dao_object = {
+        "jsonmodel_type": "digital_object",
+        "publish": True,
+        "external_ids": [],
+        "subjects": [],
+        "linked_events": [],
+        "extents": [],
+        "dates": [],
+        "external_documents": [],
+        "rights_statements": [],
+        "linked_agents": [],
+        "file_versions": [file_version],
+        "restrictions": False,
+        "notes": [],
+        "linked_instances": [],
+        "title": dao_title,
+        "language": "",
+        "digital_object_id": dao_uuid,
+    }
+
+    # Upload new digital object
+    new_dao = client.post("repositories/2/digital_objects", json=dao_object)
+    dao_uri = new_dao.json()["uri"]
+    print (f"Added digital object record {dao_uri}")
+
+    # Attach new digital object instance to archival object
+    dao_link = {
+        "jsonmodel_type": "instance",
+        "digital_object": {"ref": dao_uri},
+        "instance_type": "digital_object",
+        "is_representative": False,
+    }
+
+    item["instances"].append(dao_link)
+    update_item = client.post(item["uri"], json=item)
+
     if args.processing and len(args.processing) > 0:
         processing_note = {
             "jsonmodel_type": "note_multipart",
@@ -202,10 +263,17 @@ def main():
             "publish": True
         }
         item["notes"].append(processing_note)
-        update = client.post(item["uri"], json=item)
-        print (f"Added processing note --> {update.status_code}")
+        print (f"Added processing note.")
 
+    #update_item = client.post(item["uri"], json=item)
+    print (f"Updated archival object record --> {update_item.status_code}")
+
+    print ("Indexing record in ArcLight... (skipping)")
+    
     print ("Success!")
+    print (f"Check out digital object at:")
+    #print (f"https://media.archives.albany.edu/test.html?collection={collection_ID}&id={args.refID}")
+    print (f"https://media.archives.albany.edu/test.html?manifest={dao_url}")
 
 if __name__ == "__main__":
     main()
