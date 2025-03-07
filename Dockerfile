@@ -34,13 +34,13 @@ COPY conf/policy.xml /etc/ImageMagick-6/policy.xml
 RUN apt update && apt install -y ffmpeg
 
 # Install libreoffice
-RUN apt install -y libreoffice
+#RUN apt install -y libreoffice
 
 # wkhtmltopdf install
-RUN apt-get install -y xfonts-75dpi xfonts-base curl dpkg-dev
-RUN curl -L -o /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb \ 
-        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN dpkg -i /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb
+#RUN apt-get install -y xfonts-75dpi xfonts-base curl dpkg-dev
+#RUN curl -L -o /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb \ 
+#        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
+#RUN dpkg -i /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb
 
 RUN pip install -r requirements.txt
 
