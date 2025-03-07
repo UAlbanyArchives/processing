@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% set active = "upload" %}
+{% block title %}Add Items{% endblock %}
+{% block content %}
+  <h1>Add item records to ASpace</h1>
+  <div class="h5">
+    When your scanning only part of the folder, lets add item records to ASpace.
+  </div>
+
+  <form action="/add_items" method="post">
+    <div class="mb-3">
+      <label for="refID" class="form-label">ArchivesSpace ref_id</label>
+      <input type="refID" class="form-control" name="refID" id="refID" aria-describedby="idHelp">
+      <div id="idHelp" class="form-text">A 32 character ArchivesSpace ID, Such as "c211d5d390f9e3d6cecde272cbf7232b."</div>
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="title_1" class="form-label">Item 1 Title</label>
+          <input type="title_1" class="form-control" name="title_1" id="title_1">
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="mb-3">
+          <label for="display_date_1" class="form-label">Display date</label>
+          <input type="display_date_1" class="form-control" name="display_date_1" id="display_date_1" aria-describedby="display_date_1Help">
+          <div id="display_date_1Help" class="form-text">The date expression when needed.</div>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="mb-3">
+          <label for="normal_date_1" class="form-label">Normal date</label>
+          <input type="normal_date_1" class="form-control" name="normal_date_1" id="normal_date_1" aria-describedby="normal_date_1Help">
+          <div id="normal_date_1Help" class="form-text">Such as 1950-03-08/1952-08-30 or 1993-03, etc.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="title_2" class="form-label">Item 2 Title</label>
+          <input type="title_2" class="form-control" name="title_2" id="title_2">
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="mb-3">
+          <label for="display_date_2" class="form-label">Display date</label>
+          <input type="display_date_2" class="form-control" name="display_date_2" id="display_date_2" aria-describedby="display_date_2Help">
+          <div id="display_date_2Help" class="form-text">The date expression when needed.</div>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="mb-3">
+          <label for="normal_date_2" class="form-label">Normal date</label>
+          <input type="normal_date_2" class="form-control" name="normal_date_2" id="normal_date_2" aria-describedby="normal_date_2Help">
+          <div id="normal_date_2Help" class="form-text">Such as 1950-03-08/1952-08-30 or 1993-03, etc.</div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+{% endblock %}

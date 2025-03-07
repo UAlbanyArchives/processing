@@ -30,5 +30,8 @@ setup_dir(backlog)
 ingest = os.path.join(base, "ingest")
 setup_dir(ingest)
 
+logs = os.path.join(base, "SPE_DAO")
+setup_dir(logs)
+
 logs = os.path.join(base, "processing_logs")
 setup_dir(logs)

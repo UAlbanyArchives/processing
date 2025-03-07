@@ -13,11 +13,12 @@ services:
       - '..\flask_processing_app_testing\automated\DigitizationExtentTracker:/DigitizationExtentTracker'
       - '..\flask_processing_app_testing\backlog:/backlog'
       - '..\flask_processing_app_testing\ingest:/ingest'
+      - '..\flask_processing_app_testing\SPE_DAO:/SPE_DAO'
       - '..\flask_processing_app_testing\processing_logs:/logs'
     working_dir: /code
     command: >
       bash -c "cp /code/.archivessnake.yml ~ &&
-              cp /code/.hyrax.yml ~ &&
+              cp /code/.iiiflow.yml ~ &&
               apt update &&
               apt install apt-transport-https gnupg wget aptitude -y &&
               echo 'deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/buster/ buster main' >> /etc/apt/sources.list &&
@@ -26,6 +27,7 @@ services:
               wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add - &&
               apt update &&
               aptitude install tesseract-ocr -y &&
+              apt install libvips-tools -y &&
               apt install tzdata -y &&
               apt install rsync imagemagick -y &&
               rm /etc/ImageMagick-6/policy.xml &&

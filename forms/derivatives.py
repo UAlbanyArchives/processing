@@ -1,4 +1,4 @@
-from wtforms import Form, BooleanField, StringField, BooleanField, validators
+from wtforms import Form, BooleanField, StringField, validators
 from forms.custom_validators import validate_packageID
 
 def validate_resize(form, field):

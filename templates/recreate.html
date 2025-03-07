@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% set active = "upload" %}
+{% block title %}Recreate DAO{% endblock %}
+{% block content %}
+  <h1>Recreate DAO</h1>
+  <div class="h5">
+    Re-create parts of a digital object.
+  </div>
+  
+  <form action="/recreate" method="post">
+    <div class="mb-3">
+      <label for="mode" class="form-label">Job type</label>
+      <select class="form-select" name="mode" id="mode">
+        <option value="thumbnail">Create Thumbnail</option>
+        <option value="ptif">Create PTIFs</option>
+        <option value="ocr">Recognize Text (OCR)</option>
+        <option value="manifest">Rebuild Manifest</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="collectionID" class="form-label">Collection ID</label>
+      <input type="collectionID" class="form-control" name="collectionID" id="collectionID" aria-describedby="idHelp">
+      <div id="idHelp" class="form-text">Such as apap101 or ua902.010</div>
+    </div>
+    <div class="mb-3">
+      <label for="refID" class="form-label">Object Ref ID</label>
+      <input type="refID" class="form-control" name="refID" id="refID" aria-describedby="refIDHelp">
+      <div id="refIDHelp" class="form-text">A 32 character ArchivesSpace ID, Such as "9cede46816f600a9ea55232e2bcac9fb."</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+
+{% endblock %}

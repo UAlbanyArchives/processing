@@ -1,4 +1,5 @@
 import os
+import shlex
 from flask import Flask
 from flask import flash, redirect, Markup
 from flask import request
@@ -11,12 +12,16 @@ from forms.accession import AccessionForm
 from forms.derivatives import DerivativesForm
 from forms.list import ListForm
 from forms.ocr import OcrForm
+from forms.upload import UploadForm
 from forms.aspace import AspaceForm
 from forms.package import PackageForm
+from forms.add_items import AddItemsForm
+from forms.recreate import RecreateForm
 from forms.bulk import HyraxUploadForm, ASpaceUpdateForm
 
 from utilities.listFiles import listFiles
 from aspaceDAO import addDAO
+from add_items import add_aspace_items
 from hyrax import addAccession
 
 import csv
@@ -43,9 +48,13 @@ def ingest():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-ingest-{collectionID}.log"
-            command = f"python -u /code/utilities/ingest.py {collectionID} >> {log_file} 2>&1 &"
-            #print ("running command: " + command)
-            ingest = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+            command = [
+                "python", "-u", "/code/utilities/ingest.py", 
+                shlex.quote(collectionID)
+            ]
+            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            #print ("running command: " + safe_command)
+            ingest = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
             success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
             flash(success_msg, 'success')
@@ -64,9 +73,14 @@ def accession():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-accession-{collectionID}.log"
-            command = f"python /code/utilities/ingest.py {collectionID} -a {accessionID} >> {log_file} 2>&1 &"
-            #print ("running command: " + command)
-            accession = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+            command = [
+                "python", "/code/utilities/ingest.py", 
+                shlex.quote(collectionID), 
+                "-a", shlex.quote(accessionID)
+            ]
+            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            #print ("running command: " + safe_command)
+            accession = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
             success_msg = Markup(f'<div>Success! Packaging accession {accessionID}. Checkout the log at <a href="{log_file}">{log_file}</a></div>')
             flash(success_msg, 'success')
@@ -101,19 +115,27 @@ def derivatives():
                 flash({"Files": f'Error: No {inputFormat} files found in package {packageID}.'})
             else:
                 log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-convert-{packageID}.log"
-                command = f"python -u /code/utilities/convertImages.py {packageID} -i {inputFormat} -o {outputFormat}"
-                if subPath:
-                    command = command + f" -p {subPath}"
-                if resize:
-                    command = command + f" -r {resize}"
-                if density:
-                    command = command + f" -r {density}"
-                if monochrome:
-                    command = command + f" -bw"
-                command = command + f" >> {log_file} 2>&1 &"
+                command = [
+                    "python", "-u", "/code/utilities/convertImages.py", 
+                    shlex.quote(packageID), 
+                    "-i", shlex.quote(inputFormat),
+                    "-o", shlex.quote(outputFormat)
+                ]
                 
-                print ("running command: " + command)
-                convert = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+                if subPath:
+                    command.extend(["-p", shlex.quote(subPath)])
+                if resize:
+                    command.extend(["-r", shlex.quote(resize)])
+                if density:
+                    command.extend(["-r", shlex.quote(density)])
+                if monochrome:
+                    command.append("-bw")
+                
+                # Add log file redirection
+                safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+                
+                print ("running command: " + safe_command)
+                convert = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
                 success_msg = Markup(f'<div>Success! Converting {inputFormat} files in {packageID} to {outputFormat}. Checkout the log at <a href="{log_file}">{log_file}</a></div>')
                 flash(success_msg, 'success')
@@ -160,16 +182,174 @@ def ocr():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-ocr-{packageID}.log"
-            command = f"python -u /code/utilities/ocr.py {packageID} >> {log_file} 2>&1 &"
+            command = [
+                "python", "-u", "/code/utilities/ocr.py", 
+                shlex.quote(packageID)
+            ]
+
             if subPath:
-                command = command.replace(">>", f"-p {subPath} >>")
-            #print ("running command: " + command)
-            ocr = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+                command.extend(["-p", shlex.quote(subPath)])
+            
+            # Add log file redirection
+            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            #print ("running command: " + safe_command)
+            ocr = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
             success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
             flash(success_msg, 'success')
             return redirect(url_for('ocr'))
     return render_template('ocr.html', error=error)
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    error = None
+    if request.method == 'POST':
+        form = UploadForm(request.form)
+        packageID = form.packageID.data.strip()
+        inputFormat = form.inputFormat.data.lower().strip()
+        collectionID = packageID.split("_")[0]
+        subPath = form.subPath.data.strip() if form.subPath.data else None
+        refID = form.refID.data.strip()
+        resource_type = form.resource_type.data.strip()
+        license = form.license.data.strip()
+        rights_statement = form.rights_statement.data.strip()
+        behavior = form.behavior.data.strip()
+        createPDF = str(form.createPDF.data)
+        content_warning = form.content_warning.data.strip() if form.content_warning.data else ""
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-upload-{collectionID}.log"
+
+            # Base command
+            command = [
+                "python", "-u", "/code/utilities/upload.py",
+                "--packageID", packageID,
+                "--input_format", inputFormat,
+                "--refID", refID,
+                "--PDF", createPDF,
+                "--resource_type", resource_type,
+                "--behavior", behavior
+            ]
+
+            # Add optional arguments
+            if subPath:
+                command.append("--subPath")
+                command.append(subPath)
+            if license:
+                command.append("--license")
+                command.append(license)
+            if rights_statement:
+                command.append("--rights_statement")
+                command.append(rights_statement)
+            if content_warning:
+                command.append("--processing")
+                command.append(content_warning)
+
+            safe_command = " ".join(shlex.quote(arg) for arg in command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            #print ("running command: " + safe_command)
+            upload = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('upload'))
+    return render_template('upload.html', error=error)
+
+@app.route('/add_items', methods=['GET', 'POST'])
+def add_items():
+    error = None
+    if request.method == 'POST':
+        form = AddItemsForm(request.form)
+        
+        # Prevent AttributeError by ensuring `.data` isn't None
+        refID = form.refID.data.strip() if form.refID.data else ''
+        title_1 = form.title_1.data.strip() if form.title_1.data else ''
+        display_date_1 = form.display_date_1.data.strip() if form.display_date_1.data else ''
+        normal_date_1 = form.normal_date_1.data.strip() if form.normal_date_1.data else ''
+        title_2 = form.title_2.data.strip() if form.title_2.data else ''
+        display_date_2 = form.display_date_2.data.strip() if form.display_date_2.data else ''
+        normal_date_2 = form.normal_date_2.data.strip() if form.normal_date_2.data else ''
+
+        # Validate form
+        if not form.validate():
+            flash(str(form.errors), 'error')
+        else:
+            res1, res2 = add_aspace_items(refID, title_1, display_date_1, normal_date_1, title_2, display_date_2, normal_date_2)
+
+            errors = []
+            success_messages = []
+
+            # Handle res1
+            if res1.status_code == 200:
+                item1_id = res1.json().get('id', 'Unknown ID')
+                success_messages.append(f"Item 1 added successfully with ID: {item1_id}")
+            else:
+                error_message = res1.json().get('error', 'Unknown error')
+                errors.append(f"Item 1 failed: {error_message} (Status {res1.status_code})")
+
+            # Handle res2
+            if res2.status_code == 200:
+                item2_id = res2.json().get('id', 'Unknown ID')
+                success_messages.append(f"Item 2 added successfully with ID: {item2_id}")
+            else:
+                error_message = res2.json().get('error', 'Unknown error')
+                errors.append(f"Item 2 failed: {error_message} (Status {res2.status_code})")
+            
+            # Flash errors and success messages
+            if errors:
+                e_obj = {}
+                e_count = 0
+                for e in errors:
+                    e_obj[e] = e
+                    e_count += 1
+                flash(e_obj, 'error')
+
+            if success_messages:
+                flash(Markup("<br>".join(success_messages)), 'success')
+
+        return redirect(url_for('add_items'))
+
+    return render_template('add_items.html', error=error)
+
+
+@app.route('/recreate', methods=['GET', 'POST'])
+def recreate():
+    error = None
+    if request.method == 'POST':
+        form = RecreateForm(request.form)
+        mode = form.mode.data
+        collectionID = form.collectionID.data.strip()
+        refID = form.refID.data.strip()
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-recreate-{mode}-{collectionID}.log"
+
+            command = [
+                "python", "-u", "/code/utilities/recreate.py",
+                mode,
+                "--collectionID", collectionID,
+                "--refID", refID
+            ]
+
+            safe_command = " ".join(shlex.quote(arg) for arg in command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            #print ("running command: " + safe_command)
+            thumbnail = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+        
+        return redirect(url_for('recreate'))
+    return render_template('recreate.html', error=error)
+
+@app.route('/bulk_upload', methods=['GET', 'POST'])
+def bulk_upload():
+    error = None
+    if request.method == 'POST':
+        return redirect(url_for('bulk_upload'))
+    return render_template('bulk_upload.html', error=error)
 
 @app.route('/aspace', methods=['GET', 'POST'])
 def aspace():
@@ -244,15 +424,21 @@ def buildHyraxUpload():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-buildHyraxUpload-{packageID}.log"
-            command = f"python -u /code/utilities/buildHyraxUpload.py {packageID}"
-            if fileLimiter:
-                command = command + f" -f \"{fileLimiter.strip()}\""
-            if combine_multiple:
-                command = command + f" -c"
-            command = command + f" >> {log_file} 2>&1 &"
+            command = [
+                "python", "-u", "/code/utilities/buildHyraxUpload.py",
+                shlex.quote(packageID)
+            ]
 
-            #print ("running command: " + command)
-            build = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+            if fileLimiter:
+                command.extend(["-f", shlex.quote(fileLimiter.strip())])
+            if combine_multiple:
+                command.append("-c")
+
+            # Add log file redirection
+            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+
+            # Execute the command
+            build = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
             success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
             flash(success_msg, 'success')
@@ -272,13 +458,19 @@ def buildASpaceUpdate():
             flash(form.errors, 'error')
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-buildASpaceUpdate-{packageID}.log"
-            command = f"python -u /code/utilities/buildASpaceUpdate.py {packageID}"
-            if fileLimiter:
-                command = command + f" -f \"{fileLimiter.strip()}\""
-            command = command + f" >> {log_file} 2>&1 &"
+            command = [
+                "python", "-u", "/code/utilities/buildASpaceUpdate.py",
+                shlex.quote(packageID)
+            ]
 
-            #print ("running command: " + command)
-            build = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+            if fileLimiter:
+                command.extend(["-f", shlex.quote(fileLimiter.strip())])
+
+            # Add log file redirection
+            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+
+            # Execute the command
+            build = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
             success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
             flash(success_msg, 'success')
@@ -305,15 +497,21 @@ def package():
                 flash(error_obj, 'error')
             else:
                 log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-package-{packageID}.log"
-                command = f"python -u /code/utilities/packageAIP.py {packageID}"
-                if update:
-                    command = command + " --update"
-                if noderivatives:
-                    command = command + " --noderivatives"
-                command = command + f" >> {log_file} 2>&1 &"
+                command = [
+                    "python", "-u", "/code/utilities/packageAIP.py",
+                    shlex.quote(packageID)
+                ]
 
-                #print ("running command: " + command)
-                finalize = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+                if update:
+                    command.append("--update")
+                if noderivatives:
+                    command.append("--noderivatives")
+
+                # Add log file redirection
+                safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+
+                # Execute the command
+                finalize = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
                 success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
                 flash(success_msg, 'success')

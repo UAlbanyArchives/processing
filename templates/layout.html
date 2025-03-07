@@ -38,6 +38,19 @@
               <a class="nav-link {{'active' if active == 'ocr' }}" aria-current="{{'page' if active == 'ocr' }}" href="/ocr">OCR</a>
             </li>
             <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {{'active' if active == 'upload' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                New Single Upload
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/upload">Single upload</a>
+                <a class="dropdown-item" href="/add_items">Add item records</a>
+                <a class="dropdown-item" href="/recreate">Recreate DAO</a>
+              </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{'active' if active == 'bulk_upload' }}" aria-current="{{'page' if active == 'bulk_upload' }}" href="/bulk_upload">New Bulk Upload</a>
+            </li>
+            <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle {{'active' if active == 'single' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Single Upload
               </a>
