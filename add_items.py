@@ -45,7 +45,8 @@ def add_aspace_items(refID, title_1, display_date_1, normal_date_1, title_2, dis
         'notes': [],
         'level': 'item',
         'title': title_1,
-        'resource': item['resource']
+        'resource': item['resource'],
+        'parent': {"ref": item["uri"]}
     }
 
     if "/" in normal_date_2:
@@ -84,7 +85,8 @@ def add_aspace_items(refID, title_1, display_date_1, normal_date_1, title_2, dis
         'notes': [],
         'level': 'item',
         'title': title_2,
-        'resource': item['resource']
+        'resource': item['resource'],
+        'parent': item
     }
 
     ao_1_res = client.post("repositories/2/archival_objects", json=new_ao_1)
@@ -92,8 +94,4 @@ def add_aspace_items(refID, title_1, display_date_1, normal_date_1, title_2, dis
 
     ao_2_res = client.post("repositories/2/archival_objects", json=new_ao_2)
 
-    #if ao_1_res.status_code == 200:
-    #	add_1 = client.post(f"/repositories/2/archival_objects/{item['id']}/accept_children", json={"children": ao_1_res.json()["id"]})
-
-    #return ao_1_res.status_code, ao_1_res.json()["id"], ao_2_res.status_code, ao_2_res.json()["id"]
     return ao_1_res, ao_2_res
