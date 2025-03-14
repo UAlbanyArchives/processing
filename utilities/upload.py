@@ -5,14 +5,11 @@ import shutil
 import iiiflow
 import argparse
 
-from PIL import Image
-from pypdf import PdfWriter
 from zoneinfo import ZoneInfo
 import asnake.logging as logging
 from asnake.client import ASnakeClient
 from datetime import datetime, timezone
 from pathlib import PureWindowsPath, PurePosixPath
-from packages.resize_image import process_image_for_pdf
 
 def main():
     parser = argparse.ArgumentParser(description="Process digital object upload arguments.")
@@ -151,31 +148,8 @@ def main():
     pdf_formats = ["png", "jpg"]
     if args.PDF.lower() == "true" and args.input_format.lower() in pdf_formats:
         print ("Creating alternative PDF...")
-        pdf_path = os.path.join(object_path, "pdf")
-        if not os.path.isdir(pdf_path):
-            os.mkdir(pdf_path)
-        pdf_file = PdfWriter()
-        temp_dirs = set()
-        for image_file in file_list:
-            image_path = os.path.join(object_path, image_file)
-
-            # Process image → returns temp JPG, temp PDF, and temp dir
-            _, temp_pdf_path, tmp_dir = process_image_for_pdf(image_path)
-            temp_dirs.add(tmp_dir)  # Track temp directory
-
-            # Append temp PDF to final output
-            pdf_file.append(temp_pdf_path)
-
-        # Save the final combined PDF
-        final_pdf_path = os.path.join(pdf_path, "binder.pdf")
-        pdf_file.write(final_pdf_path)
-        pdf_file.close()
-
-        # Cleanup: Delete all temp directories
-        for tmp_dir in temp_dirs:
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-
-        print(f"PDF successfully created: {final_pdf_path}")
+        from packages.create_pdf import create_pdf
+        create_pdf(object_path, file_list)        
 
     # make thumbnail
     print ("Creating thumbnail")

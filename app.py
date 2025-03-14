@@ -319,8 +319,11 @@ def recreate():
     if request.method == 'POST':
         form = RecreateForm(request.form)
         mode = form.mode.data
-        collectionID = form.collectionID.data.strip()
+        #collectionID = form.collectionID.data.strip()
         refID = form.refID.data.strip()
+        from aspaceDAO import getCollectionID
+        collectionID = getCollectionID(refID)
+        print (f"CollectionID: {collectionID}")
 
         if not form.validate():
             flash(form.errors, 'error')
