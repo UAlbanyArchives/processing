@@ -15,6 +15,7 @@ from forms.ocr import OcrForm
 from forms.upload import UploadForm
 from forms.aspace import AspaceForm
 from forms.package import PackageForm
+from forms.reindex import ReindexForm
 from forms.add_items import AddItemsForm
 from forms.recreate import RecreateForm
 from forms.bulk import HyraxUploadForm, ASpaceUpdateForm
@@ -521,6 +522,37 @@ def package():
                 return redirect(url_for('package'))
 
     return render_template('package.html', error=error)
+
+@app.route('/reindex', methods=['GET', 'POST'])
+def reindex():
+    error = None
+    if request.method == 'POST':
+        form = ReindexForm(request.form)
+        collectionID = form.collectionID.data.strip().lower()
+        indexNDPA = form.indexNDPA.data
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-reindex-{collectionID}.log"
+
+            # Base command
+            command = [
+                "python", "-u", "/code/utilities/reindex.py",
+                "--id", collectionID
+            ]
+
+            # Add optional arguments
+            if indexNDPA:
+                command.append("--ndpa")
+
+            safe_command = " ".join(shlex.quote(arg) for arg in command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            #print ("running command: " + safe_command)
+            reindex = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('reindex'))
+    return render_template('reindex.html', error=error)
 
 @app.get('/logs')
 def list_logs():

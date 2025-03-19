@@ -46,8 +46,10 @@ RUN pip install -r requirements.txt
 
 COPY .archivessnake.yml /root
 COPY .iiiflow.yml /root
+COPY .description_harvester.yml /root
+COPY repositories.yml /root
 COPY .hyrax.yml /root
 COPY . /code
 RUN ["chmod", "+x", "./gunicorn.sh"]
 
-ENTRYPOINT ["./gunicorn.sh"]
+#ENTRYPOINT ["./gunicorn.sh"]

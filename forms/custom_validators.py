@@ -1,4 +1,4 @@
-import os
+import os, json
 from wtforms import validators
 import asnake.logging as logging
 from asnake.client import ASnakeClient
@@ -7,6 +7,13 @@ logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="IN
 client = ASnakeClient()
 
 def validate_collectionID(form, field):
+    r = client.get(f"repositories/2/find_by_id/resources", params={"identifier[]": json.dumps([field.data.strip()])})
+    if r.status_code != 200:
+        raise validators.ValidationError(f'Invalid ID or ASpace request. \"{field.data.strip()}\" returns HTTP {str(r.status_code)}')
+    elif len(r.json()['resources']) != 1:
+        raise validators.ValidationError(f'Invalid ref ID. Found {str(len(r.json()["resources"]))} matching resources with that ID?.')
+
+def validate_collectionID_ingest(form, field):
     available_collections = os.listdir("/ingest")
     if not field.data.strip() in available_collections:
         raise validators.ValidationError(f'Error: Nothing to ingest for {field.data.strip()}. No folder in ingest path  \\\\Lincoln\\Library\\SPE_Processing\\ingest\\{field.data.strip()}.')

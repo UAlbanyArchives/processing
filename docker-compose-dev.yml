@@ -2,7 +2,8 @@ version: '3.1'
 
 services:
   flask1:
-    image: python:3.9-slim-buster
+    image: processing
+    container_name: processing-dev
     ports:
       - '5000:5000'
     environment:
@@ -17,22 +18,5 @@ services:
       - '..\flask_processing_app_testing\processing_logs:/logs'
     working_dir: /code
     command: >
-      bash -c "cp /code/.archivessnake.yml ~ &&
-              cp /code/.iiiflow.yml ~ &&
-              apt update &&
-              apt install apt-transport-https gnupg wget aptitude -y &&
-              echo 'deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/buster/ buster main' >> /etc/apt/sources.list &&
-              apt update -oAcquire::AllowInsecureRepositories=true &&
-              apt install notesalexp-keyring -oAcquire::AllowInsecureRepositories=true -y &&
-              wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add - &&
-              apt update &&
-              aptitude install tesseract-ocr -y &&
-              apt install libvips-tools -y &&
-              apt install tzdata -y &&
-              apt install rsync imagemagick -y &&
-              rm /etc/ImageMagick-6/policy.xml &&
-              cp /code/conf/policy.xml /etc/ImageMagick-6/policy.xml &&
-              ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &&
-              pip install -r requirements.txt &&
-              export FLASK_DEBUG="1" &&
+      bash -c "export FLASK_DEBUG="1" &&
               flask run --host=0.0.0.0"

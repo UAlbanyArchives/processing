@@ -8,6 +8,7 @@ __pycache__/
 
 logs/*
 .archivessnake.yml
+.description_harvester.yml
 .hyrax.yml
 .iiiflow.yml
 

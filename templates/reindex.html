@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% set active = "index" %}
+{% block title %}Index{% endblock %}
+{% block content %}
+  <h1>Index</h1>
+  <div class="h5">
+    Hey, lets index some description!
+  </div>
+
+  <form action="/reindex" method="post">
+    <div class="mb-3">
+      <label for="collectionID" class="form-label">Collection ID</label>
+      <input type="collectionID" class="form-control" name="collectionID" id="collectionID" aria-describedby="idHelp">
+      <div id="idHelp" class="form-text">Such as apap101 or ua902.010.</div>
+    </div>
+      <div id="ndpaAlert" class="alert alert-warning d-none" role="alert">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="indexNDPA" name="indexNDPA" disabled=true>
+        <label class="form-check-label" for="indexNDPA">index as part of National Death Penalty Archive</label>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const collectionIDInput = document.getElementById("collectionID");
+      const indexNDPA = document.getElementById("indexNDPA");
+      const ndpaAlert = document.getElementById("ndpaAlert");
+
+      collectionIDInput.addEventListener("input", function () {
+        if (collectionIDInput.value.toLowerCase().startsWith("apap")) {
+          indexNDPA.disabled = false;
+          ndpaAlert.classList.remove("d-none"); // Show warning alert
+        } else {
+          indexNDPA.disabled = true;
+          indexNDPA.checked = false; // Uncheck when disabled
+          ndpaAlert.classList.add("d-none"); // Hide warning alert
+        }
+      });
+    });
+  </script>
+
+
+{% endblock %}
