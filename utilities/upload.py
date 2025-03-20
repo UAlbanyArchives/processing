@@ -208,8 +208,9 @@ def main():
     }
 
     # Upload new digital object
-    new_dao = client.post("repositories/2/digital_objects", json=dao_object)
-    dao_uri = new_dao.json()["uri"]
+    #new_dao = client.post("repositories/2/digital_objects", json=dao_object)
+    #dao_uri = new_dao.json()["uri"]
+    dao_uri = "blah"
     print (f"Added digital object record {dao_uri}")
 
     # Attach new digital object instance to archival object
@@ -220,8 +221,8 @@ def main():
         "is_representative": False,
     }
 
-    item["instances"].append(dao_link)
-    update_item = client.post(item["uri"], json=item)
+    #item["instances"].append(dao_link)
+    #update_item = client.post(item["uri"], json=item)
 
     if args.processing and len(args.processing) > 0:
         processing_note = {
