@@ -241,7 +241,7 @@ def main():
         print (f"Added processing note.")
 
     #update_item = client.post(item["uri"], json=item)
-    print (f"Updated archival object record --> {update_item.status_code}")
+    #print (f"Updated archival object record --> {update_item.status_code}")
 
     print ("Indexing record in ArcLight... (skipping)")
     
