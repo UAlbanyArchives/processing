@@ -11,4 +11,11 @@
     <label for="{{logFilename}}" class="form-label">{{logFilename}}</label>
     <textarea class="form-control" id="{{logFilename}}" rows="20" readonly>{{log_text}}</textarea>
   </div>
+
+  <script>
+    window.onload = function () {
+      let textarea = document.getElementById("{{logFilename}}");
+      textarea.scrollTop = textarea.scrollHeight; // Scroll to bottom
+    };
+  </script>
 {% endblock %}
