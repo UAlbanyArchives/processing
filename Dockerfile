@@ -6,16 +6,16 @@ ENV TZ=America/New_York
 
 EXPOSE 5000
 
-COPY ./requirements.txt /code/requirements.txt
-WORKDIR /code
+RUN apt update && apt install -y wget gnupg apt-transport-https
 
-RUN apt update -oAcquire::AllowInsecureRepositories=true
-RUN apt install apt-transport-https gnupg wget aptitude -y
-RUN echo 'deb [trusted=yes] https://notesalexp.org/tesseract-ocr5/buster/ buster main' >> /etc/apt/sources.list
+# Add repository and key correctly
+RUN wget -O - https://notesalexp.org/debian/alexp_key.asc | gpg --dearmor -o /usr/share/keyrings/notesalexp-keyring.gpg
 
-RUN apt install notesalexp-keyring -oAcquire::AllowInsecureRepositories=true -y
-RUN wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add -
-RUN aptitude install tesseract-ocr -y
+RUN echo "deb [signed-by=/usr/share/keyrings/notesalexp-keyring.gpg] https://notesalexp.org/tesseract-ocr5/buster/ buster main" | tee /etc/apt/sources.list.d/tesseract.list
+
+# Update and install Tesseract
+RUN apt update && apt install -y tesseract-ocr
+
 RUN apt install poppler-utils -y
 RUN apt install libvips-tools -y
 
@@ -32,14 +32,16 @@ COPY conf/policy.xml /etc/ImageMagick-6/policy.xml
 RUN apt update && apt install -y ffmpeg
 
 # Install libreoffice
-#RUN apt install -y libreoffice
+RUN apt install -y libreoffice
 
 # wkhtmltopdf install
-#RUN apt-get install -y xfonts-75dpi xfonts-base curl dpkg-dev
-#RUN curl -L -o /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb \ 
-#        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-#RUN dpkg -i /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN apt-get install -y xfonts-75dpi xfonts-base curl dpkg-dev
+RUN curl -L -o /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb \ 
+        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN dpkg -i /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb
 
+WORKDIR /code
+COPY ./requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 
 COPY .archivessnake.yml /root
