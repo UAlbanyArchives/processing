@@ -16,6 +16,7 @@ services:
       - '..\flask_processing_app_testing\ingest:/ingest'
       - '..\flask_processing_app_testing\SPE_DAO:/SPE_DAO'
       - '..\flask_processing_app_testing\processing_logs:/logs'
+      - '..\flask_processing_app_testing\ndpaList.txt:/ndpaList.txt'
     working_dir: /code
     command: >
       bash -c "export FLASK_DEBUG="1" &&

@@ -1,6 +1,6 @@
 from description_harvester import harvest
 
-def reindex(collection_ID, indexNDPA):
+def reindex(collection_ID):
 
     if collection_ID.startswith("ger"):
         repo = "ger"
@@ -9,13 +9,15 @@ def reindex(collection_ID, indexNDPA):
     elif collection_ID.startswith("ua"):
         repo = "ua"
     else:
-        if indexNDPA:
+        ndpa_path = "/ndpaList.txt"
+        with open(ndpa_path, "r") as ndpa_file:
+            ndpa_ids = {line.strip() for line in ndpa_file}
+        if collection_ID in ndpa_ids:
             repo = "ndpa"
         else:
             repo = "apap"
     
     print (f"collection: {collection_ID}")
-    print (f"NDPA?: {indexNDPA}")
     print (f"Repository: {repo}")
 
     harvest(["--id", collection_ID, "--repo", repo])
@@ -29,7 +31,6 @@ if __name__ == '__main__':
 
     argParse = argparse.ArgumentParser()
     argParse.add_argument("--id", help="Collection ID to reindex.")
-    argParse.add_argument("--ndpa", help="Index apap IDs as NDPA.", action="store_true")
     args = argParse.parse_args()
     
-    reindex(args.id, args.ndpa)
+    reindex(args.id)

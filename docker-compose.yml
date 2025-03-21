@@ -15,6 +15,7 @@ services:
       - '/media/Library/SPE_Processing/ingest:/ingest'
       - '/media/Library/SPE_DAO/a_testing:/SPE_DAO'
       - '/media/Library/SPE_Automated/processing_logs:/logs'
+      - '/media/Library/SPE_Processing/ndpaList.txt:/ndpaList.txt'
     tty: true
     stdin_open: true
     restart: always

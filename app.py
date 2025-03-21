@@ -529,7 +529,6 @@ def reindex():
     if request.method == 'POST':
         form = ReindexForm(request.form)
         collectionID = form.collectionID.data.strip().lower()
-        indexNDPA = form.indexNDPA.data
         if not form.validate():
             flash(form.errors, 'error')
         else:
@@ -540,10 +539,6 @@ def reindex():
                 "python", "-u", "/code/utilities/reindex.py",
                 "--id", collectionID
             ]
-
-            # Add optional arguments
-            if indexNDPA:
-                command.append("--ndpa")
 
             safe_command = " ".join(shlex.quote(arg) for arg in command) + f" >> {shlex.quote(log_file)} 2>&1 &"
             #print ("running command: " + safe_command)
