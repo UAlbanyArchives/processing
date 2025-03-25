@@ -145,23 +145,23 @@ def main():
     for image_file in file_list:
         shutil.copy(image_file, format_path)
 
-    pdf_formats = ["png", "jpg"]
-    if args.PDF.lower() == "true" and args.input_format.lower() in pdf_formats:
-        print ("Creating alternative PDF...")
-        from packages.create_pdf import create_pdf
-        create_pdf(object_path, file_list)        
-
     # make thumbnail
     print ("Creating thumbnail")
     iiiflow.make_thumbnail(collection_ID, args.refID)
 
+    pdf_formats = ["png", "jpg"]
+    if args.PDF.lower() == "true" and args.input_format.lower() in pdf_formats:
+        print ("Creating alternative PDF...")
+        from packages.create_pdf import create_pdf
+        create_pdf(object_path, file_list)   
+
     # Create pyramidal tifs
     print ("Creating pyramidal tifs (.ptifs)...")
-    iiiflow.create_ptif(collection_ID, args.refID)
+    #iiiflow.create_ptif(collection_ID, args.refID)
 
     # OCR
     print ("Recognizing text...")
-    iiiflow.create_hocr(collection_ID, args.refID)
+    #iiiflow.create_hocr(collection_ID, args.refID)
 
     # Create manifest
     print ("Generating IIIF manifest...")
