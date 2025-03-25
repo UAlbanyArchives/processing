@@ -157,11 +157,11 @@ def main():
 
     # Create pyramidal tifs
     print ("Creating pyramidal tifs (.ptifs)...")
-    #iiiflow.create_ptif(collection_ID, args.refID)
+    iiiflow.create_ptif(collection_ID, args.refID)
 
     # OCR
     print ("Recognizing text...")
-    #iiiflow.create_hocr(collection_ID, args.refID)
+    iiiflow.create_hocr(collection_ID, args.refID)
 
     # Create manifest
     print ("Generating IIIF manifest...")
