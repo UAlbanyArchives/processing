@@ -152,8 +152,7 @@ def main():
     pdf_formats = ["png", "jpg"]
     if args.PDF.lower() == "true" and args.input_format.lower() in pdf_formats:
         print ("Creating alternative PDF...")
-        from packages.create_pdf import create_pdf
-        create_pdf(object_path, file_list)   
+        iiiflow.create_pdf(collection_ID, args.refID)
 
     # Create pyramidal tifs
     print ("Creating pyramidal tifs (.ptifs)...")
