@@ -19,7 +19,6 @@ def main():
         make_thumbnail(args.collectionID, args.refID)
     elif args.mode == "all":
         from iiiflow import make_thumbnail, create_pdf, create_ptif, create_hocr, create_manifest
-        from packages.create_pdf import create_pdf
         print ("Recreating IIIF object...")
         make_thumbnail(args.collectionID, args.refID)
         print ("Creating pyramidal tifs (.ptifs)...")
