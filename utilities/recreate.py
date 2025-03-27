@@ -18,17 +18,14 @@ def main():
         from iiiflow import make_thumbnail
         make_thumbnail(args.collectionID, args.refID)
     elif args.mode == "all":
-        from iiiflow import make_thumbnail, create_ptif, create_hocr, create_manifest
+        from iiiflow import make_thumbnail, create_pdf, create_ptif, create_hocr, create_manifest
         from packages.create_pdf import create_pdf
         print ("Recreating IIIF object...")
         make_thumbnail(args.collectionID, args.refID)
         print ("Creating pyramidal tifs (.ptifs)...")
         create_ptif(args.collectionID, args.refID)
         print ("Creating alternative PDF...")
-        object_path = f"/SPE_DAO/{args.collectionID}/{args.refID}"
-        if not os.path.isdir(object_path):
-            raise FileNotFoundError(f"ERROR: no object path found: {object_path}")
-        create_pdf(object_path)
+        create_pdf(args.collectionID, args.refID)
         print ("Recognizing text...")  
         create_hocr(args.collectionID, args.refID)
         print ("Generating IIIF manifest...")
@@ -48,12 +45,9 @@ def main():
         #print (f"Check out digital object at:")
         #print (f"https://media.archives.albany.edu/test.html?collection={args.collection_ID}&id={args.refID}")
     elif args.mode == "pdf":
-        from packages.create_pdf import create_pdf
+        from iiiflow import create_pdf
         print ("Creating alternative PDF...")
-        object_path = f"/SPE_DAO/{args.collectionID}/{args.refID}"
-        if not os.path.isdir(object_path):
-            raise FileNotFoundError(f"ERROR: no object path found: {object_path}")
-        create_pdf(object_path)
+        create_pdf(args.collectionID, args.refID)
     elif args.mode == "ptif":
         from iiiflow import create_ptif
         print ("Creating pyramidal tifs (.ptifs)...")
