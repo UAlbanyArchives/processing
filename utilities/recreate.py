@@ -1,4 +1,5 @@
 import os
+import yaml
 import argparse
 
 def main():
@@ -9,6 +10,10 @@ def main():
     parser.add_argument("--refID", required=True, help="A 32-character ArchivesSpace ID, e.g., '855f9efb1fae87fa3b6ef8c8a6e0a28d'.")
 
     args = parser.parse_args()
+
+    with open("/root/.iiiflow.yml", "r") as config_file:
+        config = yaml.safe_load(config_file)
+    manifest_url_root = config.get("manifest_url_root")
 
     print(f"Mode: {args.mode}")
     print(f"Collection ID: {args.collectionID}")
@@ -65,6 +70,9 @@ def main():
         raise ValueError(f"ERROR: incorrect mode {args.mode}.")
 
     print ("Success!")
+    dao_url = f"{manifest_url_root}/{args.collectionID}/{args.refID}/manifest.json"
+    print (f"Check out digital object at:")
+    print (f"https://media.archives.albany.edu/test.html?manifest={dao_url}")
 
 if __name__ == "__main__":
     main()
