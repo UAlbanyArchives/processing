@@ -221,7 +221,7 @@ def upload():
         if not form.validate():
             flash(form.errors, 'error')
         else:
-            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-upload-{collectionID}.log"
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-upload-{packageID}.log"
 
             # Base command
             command = [
@@ -329,7 +329,7 @@ def recreate():
         if not form.validate():
             flash(form.errors, 'error')
         else:
-            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-recreate-{mode}-{collectionID}.log"
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-recreate-{mode}-{collectionID}-{refID}.log"
 
             command = [
                 "python", "-u", "/code/utilities/recreate.py",
