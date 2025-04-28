@@ -20,7 +20,7 @@ def reindex(collection_ID):
     print (f"collection: {collection_ID}")
     print (f"Repository: {repo}")
 
-    harvest(["--id", collection_ID, "--repo", repo])
+    harvest(["--id", collection_ID, "-v", "--repo", repo])
 
     print ("Complete.")
 
