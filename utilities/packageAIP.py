@@ -92,12 +92,25 @@ if not args.update:
         print ("Removed SIP at " + str(datetime.now()))
         
         # remove processing package
-        print ("Removing processing package " + args.package  + "...")
+        print (f"Removing processing package {args.package}...")
         shutil.rmtree(package)
+        print (f"Removed processing package at {datetime.now()}.")
         collectionDir = os.path.join(processingDir, colID)
         if len(os.listdir(collectionDir)) == 0:
             os.rmdir(collectionDir)
-        print ("Removed processing package at " + str(datetime.now()))
+            print (f"Removed empty collection directory at {datetime.now()}.")
+        else:
+            total_thing = 0
+            total_files = 0
+            total_dirs = 0
+            for thing in os.scandir(collectionDir):
+                total_thing += 1
+                if thing.is_file():
+                    total_files += 1
+                    print (f"\tFound {thing.name}")
+                if thing.is_dir():
+                    total_dirs += 1
+            print (f"Maintained collection directory with {total_thing} length, {total_files} files, and {total_dirs} folders.")
     else:
         raise ValueError ("ERROR: AIP does not conform to SIP manifest. Did not delete SIP.")
 else:
