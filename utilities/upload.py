@@ -55,12 +55,13 @@ def main():
 
     """
     1. Create SPE_DAO package and write metadata.yml and copy files over
-    2. create thumbnail
+    2. Create thumbnail
     3. OCR or transcription
-    4. create ptifs
-    5. create manifest
-    6. Add digital object record to ASpace
-    7. Index record in ArcLight
+    4. Create ptifs
+    5. Index HOCR for content search
+    6. Create manifest
+    7. Add digital object record to ASpace
+    8. Index record in ArcLight
     """
 
     metadata = {}
@@ -161,6 +162,10 @@ def main():
     # OCR
     print ("Recognizing text...")
     iiiflow.create_hocr(collection_ID, args.refID)
+
+    # Index HOCR
+    print ("Indexing text for content search...")
+    iiiflow.index_hocr_to_solr(collection_ID, args.refID)
 
     # Create manifest
     print ("Generating IIIF manifest...")

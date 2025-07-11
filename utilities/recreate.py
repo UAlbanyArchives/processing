@@ -23,7 +23,7 @@ def main():
         from iiiflow import make_thumbnail
         make_thumbnail(args.collectionID, args.refID)
     elif args.mode == "all":
-        from iiiflow import make_thumbnail, create_pdf, create_ptif, create_hocr, create_manifest
+        from iiiflow import make_thumbnail, create_pdf, create_ptif, create_hocr, create_manifest, index_hocr_to_solr
         print ("Recreating IIIF object...")
         make_thumbnail(args.collectionID, args.refID)
         print ("Creating pyramidal tifs (.ptifs)...")
@@ -32,18 +32,22 @@ def main():
         create_pdf(args.collectionID, args.refID)
         print ("Recognizing text...")  
         create_hocr(args.collectionID, args.refID)
+        print ("Indexing HOCR text for content search...")
+        index_hocr_to_solr(args.collectionID, args.refID)
         print ("Generating IIIF manifest...")
         create_manifest(args.collectionID, args.refID)
         #print (f"Check out digital object at:")
         #print (f"https://media.archives.albany.edu/test.html?collection={args.collection_ID}&id={args.refID}")
     elif args.mode == "all-no-pdf":
-        from iiiflow import make_thumbnail, create_ptif, create_hocr, create_manifest
+        from iiiflow import make_thumbnail, create_ptif, create_hocr, create_manifest, index_hocr_to_solr
         print ("Recreating IIIF object...")
         make_thumbnail(args.collectionID, args.refID)
         print ("Creating pyramidal tifs (.ptifs)...")
         create_ptif(args.collectionID, args.refID)
         print ("Recognizing text...")  
         create_hocr(args.collectionID, args.refID)
+        print ("Indexing HOCR text for content search...")
+        index_hocr_to_solr(args.collectionID, args.refID)
         print ("Generating IIIF manifest...")
         create_manifest(args.collectionID, args.refID)
         #print (f"Check out digital object at:")
@@ -57,9 +61,11 @@ def main():
         print ("Creating pyramidal tifs (.ptifs)...")
         create_ptif(args.collectionID, args.refID)
     elif args.mode == "ocr":
-        from iiiflow import create_hocr
+        from iiiflow import create_hocr, index_hocr_to_solr
         print ("Recognizing text...")  
         create_hocr(args.collectionID, args.refID)
+        print ("Indexing HOCR text for content search...")
+        index_hocr_to_solr(args.collectionID, args.refID)
     elif args.mode == "manifest":
         from iiiflow import create_manifest  
         print ("Generating IIIF manifest...")
