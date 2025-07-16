@@ -66,6 +66,10 @@ def main():
         create_hocr(args.collectionID, args.refID)
         print ("Indexing HOCR text for content search...")
         index_hocr_to_solr(args.collectionID, args.refID)
+    elif args.mode == "index":
+        from iiiflow import index_hocr_to_solr
+        print ("Indexing HOCR text for content search...")
+        index_hocr_to_solr(args.collectionID, args.refID)
     elif args.mode == "manifest":
         from iiiflow import create_manifest  
         print ("Generating IIIF manifest...")

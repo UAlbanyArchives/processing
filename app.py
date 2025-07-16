@@ -28,11 +28,12 @@ from hyrax import addAccession
 import csv
 import shutil
 from datetime import datetime
+from dotenv import load_dotenv
 from subprocess import Popen, PIPE
 import traceback
 
 app = Flask(__name__)
-app.secret_key = b'_5#y73:F4T8z\n\xec]/'
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 @app.route('/')
 def index():
