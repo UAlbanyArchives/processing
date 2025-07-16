@@ -47,6 +47,11 @@ To stop:
 docker-compose down
 ```
 
+This needs an `.env` or environment variable with:
+```
+FLASK_SECRET_KEY=value
+```
+
 ### For a terminal
 
 If you need another terminal:
