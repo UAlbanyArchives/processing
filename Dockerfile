@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 MAINTAINER Gregory Wiedeman gwiedeman@albany.edu
 
 ENV FLASK_APP=app
@@ -16,6 +16,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/notesalexp-keyring.gpg] https://not
 # Update and install Tesseract
 RUN apt update && apt install -y tesseract-ocr
 
+RUN apt install git -y
 RUN apt install poppler-utils -y
 RUN apt install libvips-tools -y
 
@@ -36,9 +37,9 @@ RUN apt install -y libreoffice
 
 # wkhtmltopdf install
 RUN apt-get install -y xfonts-75dpi xfonts-base curl dpkg-dev
-RUN curl -L -o /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb \ 
-        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN dpkg -i /tmp/wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN curl -L -o /tmp/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \ 
+        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
+RUN dpkg -i /tmp/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
 
 WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
