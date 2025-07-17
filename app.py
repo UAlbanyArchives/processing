@@ -33,6 +33,7 @@ from subprocess import Popen, PIPE
 import traceback
 
 app = Flask(__name__)
+load_dotenv()
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 @app.route('/')
