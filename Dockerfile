@@ -1,4 +1,4 @@
-FROM python:3.11.2-slim-buster
+FROM python:3.11-slim
 MAINTAINER Gregory Wiedeman gwiedeman@albany.edu
 
 ENV FLASK_APP=app
