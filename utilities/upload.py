@@ -212,9 +212,8 @@ def main():
     }
 
     # Upload new digital object
-    #new_dao = client.post("repositories/2/digital_objects", json=dao_object)
-    #dao_uri = new_dao.json()["uri"]
-    dao_uri = "blah"
+    new_dao = client.post("repositories/2/digital_objects", json=dao_object)
+    dao_uri = new_dao.json()["uri"]
     print (f"Added digital object record {dao_uri}")
 
     # Attach new digital object instance to archival object
@@ -225,8 +224,8 @@ def main():
         "is_representative": False,
     }
 
-    #item["instances"].append(dao_link)
-    #update_item = client.post(item["uri"], json=item)
+    item["instances"].append(dao_link)
+    update_item = client.post(item["uri"], json=item)
 
     if args.processing and len(args.processing) > 0:
         processing_note = {
@@ -244,10 +243,10 @@ def main():
         item["notes"].append(processing_note)
         print (f"Added processing note.")
 
-    #update_item = client.post(item["uri"], json=item)
-    #print (f"Updated archival object record --> {update_item.status_code}")
+    update_item = client.post(item["uri"], json=item)
+    print (f"Updated archival object record --> {update_item.status_code}")
 
-    print ("Indexing record in ArcLight... (skipping)")
+    #print ("Indexing record in ArcLight... (skipping)")
     
     print ("Success!")
     print (f"Check out digital object at:")

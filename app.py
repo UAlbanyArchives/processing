@@ -11,14 +11,11 @@ from forms.ingest import IngestForm
 from forms.accession import AccessionForm
 from forms.derivatives import DerivativesForm
 from forms.list import ListForm
-from forms.ocr import OcrForm
 from forms.upload import UploadForm
-from forms.aspace import AspaceForm
 from forms.package import PackageForm
 from forms.reindex import ReindexForm
 from forms.add_items import AddItemsForm
 from forms.recreate import RecreateForm
-from forms.bulk import HyraxUploadForm, ASpaceUpdateForm
 
 from utilities.listFiles import listFiles
 from aspaceDAO import addDAO
@@ -174,35 +171,6 @@ def downloadSheet():
     sheetPath = "/code/static"
     return send_from_directory(sheetPath, "asInventory.xlsx", as_attachment=True)
 
-@app.route('/ocr', methods=['GET', 'POST'])
-def ocr():
-    error = None
-    if request.method == 'POST':
-        form = OcrForm(request.form)
-        packageID = form.packageID.data.strip()
-        subPath = form.subPath.data
-        if not form.validate():
-            flash(form.errors, 'error')
-        else:
-            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-ocr-{packageID}.log"
-            command = [
-                "python", "-u", "/code/utilities/ocr.py", 
-                shlex.quote(packageID)
-            ]
-
-            if subPath:
-                command.extend(["-p", shlex.quote(subPath)])
-            
-            # Add log file redirection
-            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
-            #print ("running command: " + safe_command)
-            ocr = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
-
-            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-            flash(success_msg, 'success')
-            return redirect(url_for('ocr'))
-    return render_template('ocr.html', error=error)
-
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     error = None
@@ -356,133 +324,6 @@ def bulk_upload():
     if request.method == 'POST':
         return redirect(url_for('bulk_upload'))
     return render_template('bulk_upload.html', error=error)
-
-@app.route('/aspace', methods=['GET', 'POST'])
-def aspace():
-    error = None
-    if request.method == 'POST':
-        form = AspaceForm(request.form)
-        packageID = form.packageID.data.strip()
-        hyraxURI = form.hyraxURI.data.strip()
-
-        #validate
-        if not form.validate():
-            flash(form.errors, 'error')
-        else:
-            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-aspace-{packageID}.log"
-            packagePath = os.path.join("/backlog", packageID.split("_")[0], packageID)
-            if len(os.listdir(os.path.join(packagePath, "derivatives"))) > 0:
-                file_name = os.listdir(os.path.join(packagePath, "derivatives"))[0]
-            elif len(os.listdir(os.path.join(packagePath, "masters"))) > 0:
-                file_name = os.listdir(os.path.join(packagePath, "masters"))[0]
-            else:
-                error_obj = {"Invalid_package": [f"Package {packageID} has no files in either derivatives or masters."]}
-                flash(error_obj, 'error')
- 
-            #Add package ID to Hyrax if not there?
-            hyraxData = addAccession(hyraxURI, packageID, log_file)
-            hyraxData[2] = file_name
-
-            #Create digital object record in ASpace
-            refID = hyraxData[7]
-            addDAO(refID, hyraxURI, log_file)
-
-            #Add CSV to package /metadata folder
-            with open(log_file, "a") as open_log:
-                open_log.write("\nWriting Hyrax metadata to package...")
-                headers = ["Type", "URIs", "File Paths", "Accession", "Collecting Area", "Collection Number", "Collection", \
-                "ArchivesSpace ID", "Record Parents", "Title", "Description", "Date Created", "Resource Type", "License", \
-                "Rights Statement", "Subjects", "Whole/Part", "Processing Activity", "Extent", "Language"]
-                metadataPath = os.path.join(packagePath, "metadata")
-                metadataFile = os.path.join(metadataPath, packageID + ".tsv")
-                if os.path.isfile(metadataFile):
-                    #append to existing .tsv
-                    with open(metadataFile, "a") as f:
-                        writer = csv.writer(f, delimiter='\t', lineterminator='\n')
-                        writer.writerow(hyraxData)
-                        f.close()
-                else:
-                    with open(metadataFile, "w") as f:
-                        writer = csv.writer(f, delimiter='\t', lineterminator='\n')
-                        writer.writerow(headers)
-                        writer.writerow(hyraxData)
-                        f.close()
-                open_log.write("\nComplete!")
-                open_log.write(f"\nFinished at {datetime.now()}")
-                open_log.close()
-
-            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-            flash(success_msg, 'success')
-            return redirect(url_for('aspace'))
-            
-    return render_template('aspace.html', error=error)
-
-@app.route('/buildHyraxUpload', methods=['GET', 'POST'])
-def buildHyraxUpload():
-    error = None
-    if request.method == 'POST':
-        form = HyraxUploadForm(request.form)
-        packageID = form.packageID.data.strip()
-        fileLimiter = form.file.data
-        combine_multiple = form.combine_multiple.data
-
-        if not form.validate():
-            flash(form.errors, 'error')
-        else:
-            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-buildHyraxUpload-{packageID}.log"
-            command = [
-                "python", "-u", "/code/utilities/buildHyraxUpload.py",
-                shlex.quote(packageID)
-            ]
-
-            if fileLimiter:
-                command.extend(["-f", shlex.quote(fileLimiter.strip())])
-            if combine_multiple:
-                command.append("-c")
-
-            # Add log file redirection
-            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
-
-            # Execute the command
-            build = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
-
-            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-            flash(success_msg, 'success')
-            return redirect(url_for('buildHyraxUpload'))
-
-    return render_template('buildHyraxUpload.html', error=error)
-
-@app.route('/buildASpaceUpdate', methods=['GET', 'POST'])
-def buildASpaceUpdate():
-    error = None
-    if request.method == 'POST':
-        form = ASpaceUpdateForm(request.form)
-        packageID = form.packageID.data.strip()
-        fileLimiter = form.file.data
-
-        if not form.validate():
-            flash(form.errors, 'error')
-        else:
-            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-buildASpaceUpdate-{packageID}.log"
-            command = [
-                "python", "-u", "/code/utilities/buildASpaceUpdate.py",
-                shlex.quote(packageID)
-            ]
-
-            if fileLimiter:
-                command.extend(["-f", shlex.quote(fileLimiter.strip())])
-
-            # Add log file redirection
-            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
-
-            # Execute the command
-            build = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
-
-            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-            flash(success_msg, 'success')
-            return redirect(url_for('buildASpaceUpdate'))
-
-    return render_template('buildASpaceUpdate.html', error=error)
 
 @app.route('/package', methods=['GET', 'POST'])
 def package():

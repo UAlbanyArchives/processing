@@ -34,12 +34,9 @@
             <li class="nav-item">
               <a class="nav-link {{'active' if active == 'derivatives' }}" aria-current="{{'page' if active == 'derivatives' }}" href="/derivatives">Derivatives</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'ocr' }}" aria-current="{{'page' if active == 'ocr' }}" href="/ocr">OCR</a>
-            </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle {{'active' if active == 'upload' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                New Single Upload
+                Single Upload
               </a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" href="/upload">Single upload</a>
@@ -48,26 +45,11 @@
               </div>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'bulk_upload' }}" aria-current="{{'page' if active == 'bulk_upload' }}" href="/bulk_upload">New Bulk Upload</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {{'active' if active == 'single' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Single Upload
-              </a>
+              <a class="nav-link dropdown-toggle {{'active' if active == 'bulk_upload' }}" aria-current="{{'page' if active == 'bulk_upload' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Bulk Upload</a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="https://archives.albany.edu/concern/daos/new" target="_blank">Hyrax upload</a>
-                <a class="dropdown-item" href="/aspace">Connect to ASpace</a>
-              </div>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {{'active' if active == 'batch' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Batch Upload
-              </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/bulk_upload">Bulk Upload</a>
                 <a class="dropdown-item" href="/list">List Files and empty sheet</a>
                 <a class="dropdown-item" href="/sheet">Download empty sheet</a>
-                <a class="dropdown-item" href="/buildHyraxUpload">Build Hyrax Upload Sheet</a>
-                <a class="dropdown-item" href="/buildASpaceUpdate">Update asInventory Sheet</a>
               </div>
             </li>
             <li class="nav-item">
