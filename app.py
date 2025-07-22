@@ -339,30 +339,26 @@ def package():
         else:
             collectionID = packageID.split("_")[0]
             metadata_file = f'/backlog/{collectionID}/{packageID}/metadata/{packageID}.tsv'
-            if not os.path.isfile(metadata_file):
-                error_obj = {"Cannot package": [f"Package {packageID} does not have a metadata file. You must first update the ASpace digital object. Use the Connect to ASpace form for single files, or Build Hyrax Upload Sheet for large ingests."]}
-                flash(error_obj, 'error')
-            else:
-                log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-package-{packageID}.log"
-                command = [
-                    "python", "-u", "/code/utilities/packageAIP.py",
-                    shlex.quote(packageID)
-                ]
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-package-{packageID}.log"
+            command = [
+                "python", "-u", "/code/utilities/packageAIP.py",
+                shlex.quote(packageID)
+            ]
 
-                if update:
-                    command.append("--update")
-                if noderivatives:
-                    command.append("--noderivatives")
+            if update:
+                command.append("--update")
+            if noderivatives:
+                command.append("--noderivatives")
 
-                # Add log file redirection
-                safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            # Add log file redirection
+            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
 
-                # Execute the command
-                finalize = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+            # Execute the command
+            finalize = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
 
-                success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
-                flash(success_msg, 'success')
-                return redirect(url_for('package'))
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('package'))
 
     return render_template('package.html', error=error)
 
