@@ -71,7 +71,7 @@ def main():
     metadata["behavior"] = args.behavior
     if args.rights_statement:
         metadata["rights_statement"] = args.rights_statement
-    metadata["date_published"] = datetime.now(ZoneInfo("America/New_York")).isoformat()
+    metadata["date_uploaded"] = datetime.now(ZoneInfo("America/New_York")).isoformat()
 
     logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="INFO")
     client = ASnakeClient()
