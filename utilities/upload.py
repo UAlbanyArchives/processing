@@ -194,6 +194,7 @@ def main():
     dao_object = {
         "jsonmodel_type": "digital_object",
         "publish": True,
+        "is_representative": True,
         "external_ids": [],
         "subjects": [],
         "linked_events": [],
@@ -251,7 +252,7 @@ def main():
     print ("Success!")
     print (f"Check out digital object at:")
     #print (f"https://media.archives.albany.edu/test.html?collection={collection_ID}&id={args.refID}")
-    print (f"https://media.archives.albany.edu/test.html?manifest={dao_url}")
+    print (f"https://media.archives.albany.edu?manifest={dao_url}")
 
 if __name__ == "__main__":
     main()

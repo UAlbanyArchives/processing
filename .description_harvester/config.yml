@@ -1,5 +1,5 @@
 last_query: 0
-solr_core: arclight-1.4_dao
+solr_core: arclight-1.6_tmp
 solr_url: https://solr2020.library.albany.edu:8984/solr
 cache_expiration: 0
 metadata:
