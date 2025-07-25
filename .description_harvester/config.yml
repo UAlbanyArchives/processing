@@ -1,10 +1,9 @@
+cache_expiration: 86400
 last_query: 0
-solr_core: arclight-1.6_tmp
-solr_url: https://solr2020.library.albany.edu:8984/solr
-cache_expiration: 0
 metadata:
-- ssm:
+- ssi:
   - date_uploaded
+- ssm:
   - date_digitized
   - extent
 - ssim:
@@ -20,3 +19,5 @@ metadata:
   - processing_activity
 - tesim:
   - description
+solr_core: arclight-1.6
+solr_url: https://solr2020.library.albany.edu:8984/solr

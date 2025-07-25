@@ -1,5 +1,4 @@
 FROM python:3.11-slim-bookworm
-MAINTAINER Gregory Wiedeman gwiedeman@albany.edu
 
 ENV FLASK_APP=app
 ENV TZ=America/New_York
