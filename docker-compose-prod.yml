@@ -1,0 +1,24 @@
+version: '3.1'
+
+services:
+  flask1:
+    image: processing
+    container_name: processing
+    hostname: aspace.library.albany.edu
+    network_mode: "host"
+    ports:
+      - '0.0.0.0:5000:5000'
+    env_file:
+      - .env
+    volumes:
+      - '/media/Masters/Archives:/Archives'
+      - '/media/Library/SPE_Automated/DigitizationExtentTracker:/DigitizationExtentTracker'
+      - '/media/Library/SPE_Processing/backlog:/backlog'
+      - '/media/Library/SPE_Processing/ingest:/ingest'
+      - '/media/Library/SPE_DAO:/SPE_DAO'
+      - '/media/Library/SPE_Automated/processing_logs:/logs'
+      - '/media/Library/SPE_Processing/ndpaList.txt:/ndpaList.txt'
+    tty: true
+    stdin_open: true
+    restart: always
+    command: ./gunicorn.sh

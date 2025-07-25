@@ -16,9 +16,9 @@ If you don't have the default development test directories required, you can cre
 python setup-dev.py
 ```
 
-Run the app:
+Run the app in development mode:
 ```
-docker-compose -f docker-compose-dev.yml up
+docker-compose up
 ```
 
 Navigate to [http://localhost:5000](http://localhost:5000)
@@ -30,26 +30,32 @@ docker-compose down
 
 ### For deployment
 
-Building the `processing` image:
-(FYI you need .archivessnake.yml and .hyrax.yml)
-```
-docker build -t "processing" .
-```
-
-Running the image
-```
-docker-compose up -d
-```
-Navigate to [http://localhost:5000](http://localhost:5000)
-
-To stop:
-```
-docker-compose down
-```
-
 This needs an `.env` or environment variable with:
 ```
 FLASK_SECRET_KEY=value
+```
+This also needs ~/.archivessnake.yml config and ~/.description_harvester config.
+
+Building the `processing` image:
+```
+make build
+```
+
+Restarting the service:
+```
+make restart
+```
+
+Navigate to [http://localhost:5000](http://localhost:5000)
+
+## On Windows
+Raw commands without Makefile:
+```
+docker build -t "processing" .
+```
+Running the image
+```
+docker-compose up -d
 ```
 
 ### For a terminal
