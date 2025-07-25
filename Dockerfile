@@ -50,7 +50,6 @@ COPY .iiiflow.yml /root
 RUN mkdir -p /root/.description_harvester
 COPY .description_harvester/config.yml /root/.description_harvester/config.yml
 COPY .description_harvester/repositories.yml /root/.description_harvester/repositories.yml
-COPY .hyrax.yml /root
 COPY . /code
 RUN ["chmod", "+x", "./gunicorn.sh"]
 
