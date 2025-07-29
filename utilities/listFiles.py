@@ -1,26 +1,50 @@
 import os
 
-def writeList(package, directory, name, verbose, log_file):
-
-    #get all files in the folder
+def writeList(package, directory, name, verbose=False, log_file=None):
     fileList = []
     dirList = []
+    filenames = {}  # maps lowercase base filename -> list of full paths
+
     for root, dirs, files in os.walk(directory):
         for folder in dirs:
             dirList.append(folder)
         for item in files:
             filePath = os.path.join(root, item).split(directory)[1]
-            if filePath.startswith("\\"):
+            if filePath.startswith("\\") or filePath.startswith("/"):
                 filePath = filePath[1:]
-            if filePath.startswith("/"):
-                filePath = filePath[1:]
+
             if verbose:
+                msg = f"\twriting {filePath}"
                 if log_file:
                     with open(log_file, "a") as f:
-                        f.write(f"\n\twriting {filePath}")
+                        f.write(f"\n{msg}")
                 else:
-                    print (f"\twriting {filePath}")
+                    print(msg)
+
             fileList.append(filePath)
+
+            filename, ext = os.path.splitext(item)
+            key = filename.lower()
+
+            # add this file to the list for that base name
+            filenames.setdefault(key, []).append(os.path.join(root, item))
+
+    # collect all duplicates
+    dupList = [path for paths in filenames.values() if len(paths) > 1 for path in paths]
+
+    # write results
+    with open(f"{name}_files.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(sorted(fileList)))
+
+    with open(f"{name}_dirs.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(sorted(dirList)))
+
+    with open(f"{name}_duplicates.txt", "w", encoding="utf-8") as f:
+        if dupList:
+            f.write("\n".join(sorted(dupList)))
+        else:
+            f.write("No duplicates found.")
+
 
     # Write to files
     with open(os.path.join(package, f'{name}.txt'), 'w') as f:
@@ -29,6 +53,10 @@ def writeList(package, directory, name, verbose, log_file):
         f.close()
     with open(os.path.join(package, f'{name}-directories.txt'), 'w') as f:
         for line in dirList:
+            f.write(f"{line}\n")
+        f.close()
+    with open(os.path.join(package, f'{name}-duplicates.txt'), 'w') as f:
+        for line in dupList:
             f.write(f"{line}\n")
         f.close()
 

@@ -12,6 +12,7 @@ from forms.accession import AccessionForm
 from forms.derivatives import DerivativesForm
 from forms.list import ListForm
 from forms.upload import UploadForm
+from forms.bulk_upload import BulkForm
 from forms.package import PackageForm
 from forms.reindex import ReindexForm
 from forms.add_items import AddItemsForm
@@ -322,7 +323,25 @@ def recreate():
 def bulk_upload():
     error = None
     if request.method == 'POST':
-        return redirect(url_for('bulk_upload'))
+        form = BulkForm(request.form)
+        packageID = form.packageID.data.strip()
+        sheetFile = form.sheetFile.data.strip()
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-bulk-{packageID}.log"
+            command = [
+                "python", "/code/utilities/bulk_upload.py", 
+                shlex.quote(packageID), 
+                "--sheet", shlex.quote(sheetFile)
+            ]
+            safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+            print ("running command: " + safe_command)
+            bulk = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Bulk uploading {sheetFile} in {packageID}. Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('bulk_upload'))
     return render_template('bulk_upload.html', error=error)
 
 @app.route('/package', methods=['GET', 'POST'])

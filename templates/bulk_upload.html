@@ -3,8 +3,31 @@
 {% block title %}Bulk Upload{% endblock %}
 {% block content %}
   <h1>Bulk Upload</h1>
-  
-  <img src="https://sismo.app/wp-content/uploads/2019/02/under-construction-gif-11.gif">
+
+    <div class="h5">
+      Hey, lets upload a batch of digital objects!
+    </div>
+
+    <div class="h5">
+      <a href="https://wiki.albany.edu/display/SCA/Ingesting+Digital+Materials">Wiki documentation</a>
+    </div>
+    
+
+      <form action="/bulk_upload" method="post">
+        <div class="mb-3">
+          <label for="packageID" class="form-label">Package ID</label>
+          <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+          <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="sheetFile" class="form-label">Sheet filename</label>
+          <input type="sheetFile" class="form-control" name="sheetFile" id="sheetFile" aria-describedby="sheetFileHelp">
+          <div id="sheetFileHelp" class="form-text">Name of a .xslx file in the package's \metadata folder, such as upload1.xlsx</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
 
 
 {% endblock %}
