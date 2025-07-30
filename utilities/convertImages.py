@@ -131,26 +131,37 @@ def main():
                 ext = os.path.splitext(file)[1].lower()
                 if ext not in input_exts:
                     continue
+
                 infile = os.path.join(root, file)
                 rel_root = os.path.relpath(root, masters)
                 out_dir = os.path.join(derivatives, rel_root)
                 os.makedirs(out_dir, exist_ok=True)
-                out_file = os.path.join(out_dir, os.path.splitext(file)[0] + f".{args.output}")
+
+                base_name = os.path.splitext(file)[0]
+                # for PDF/Office, create a subfolder with the filename
+                if args.input.lower() in ("pdf", "doc", "docx", "ppt", "pptx"):
+                    doc_out_dir = os.path.join(out_dir, base_name)
+                    os.makedirs(doc_out_dir, exist_ok=True)
+                    outprefix = os.path.join(doc_out_dir, base_name)
+                else:
+                    doc_out_dir = out_dir
+                    outprefix = os.path.join(doc_out_dir, base_name)
+
                 if args.input.lower() == "pdf":
-                    extract_from_pdf(infile, os.path.splitext(out_file)[0], args.output.lower())
+                    extract_from_pdf(infile, outprefix, args.output.lower())
                 elif args.input.lower() in ("doc", "docx", "ppt", "pptx"):
-                    # Office docs: convert to PDF first, then extract
                     tmp_pdf_dir = os.path.join(package, "tmp_pdf")
                     os.makedirs(tmp_pdf_dir, exist_ok=True)
                     convert_office_to_pdf(infile, tmp_pdf_dir)
-                    tmp_pdf = os.path.join(tmp_pdf_dir, os.path.splitext(file)[0] + ".pdf")
-                    extract_from_pdf(tmp_pdf, os.path.splitext(out_file)[0], args.output.lower())
+                    tmp_pdf = os.path.join(tmp_pdf_dir, f"{base_name}.pdf")
+                    extract_from_pdf(tmp_pdf, outprefix, args.output.lower())
                     try:
                         shutil.rmtree(tmp_pdf_dir)
                         print(f"Temporary directory {tmp_pdf_dir} removed.")
                     except Exception as e:
                         print(f"Warning: could not remove temporary directory {tmp_pdf_dir}: {e}")
                 else:
+                    out_file = f"{outprefix}.{args.output}"
                     convert_image(infile, out_file, args.resize, args.density, args.monochrome)
 
     print("Complete!")
