@@ -151,8 +151,8 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
         errors.append(f"SPE_DAO object path '{object_path}' already exists for row {row_num}")
 
     # Validate controlled vocab fields
-    input_fmt = str(row[col_index["Input Format"]]).strip() if row[col_index["Input Format"]] else ""
-    if input_fmt and input_fmt not in ALLOWED_INPUT_FORMATS:
+    input_fmt = str(row[col_index["Input Format"]]).strip().lower() if row[col_index["Input Format"]] else ""
+    if input_fmt and input_fmt.lower() not in ALLOWED_INPUT_FORMATS:
         errors.append(f"Invalid Input Format '{input_fmt}' in row {row_num}")
 
     res_type = str(row[col_index["Resource Type"]]).strip() if row[col_index["Resource Type"]] else ""
@@ -163,7 +163,7 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
     if license_val and license_val not in ALLOWED_LICENSES:
         errors.append(f"Invalid License '{license_val}' in row {row_num}")
 
-    behavior = str(row[col_index["Behavior"]]).strip() if row[col_index["Behavior"]] else ""
+    behavior = str(row[col_index["Behavior"]]).strip().lower() if row[col_index["Behavior"]] else ""
     if behavior and behavior not in ALLOWED_BEHAVIORS:
         errors.append(f"Invalid Behavior '{behavior}' in row {row_num}")
 
@@ -255,7 +255,7 @@ for rec in records:
         pdf_path = os.path.join(object_path, "pdf")
         os.mkdir(pdf_path)
         shutil.copy2(original_path, pdf_path)
-    elif input_fmt in pdf_formats:
+    elif input_fmt.lower() in pdf_formats:
         print ("\tCreating alternative PDF...")
         iiiflow.create_pdf(collection_ID, args.refID)
 
