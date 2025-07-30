@@ -2,18 +2,25 @@ import os
 import re
 import sys
 import yaml
+import uuid
 import shutil
 import iiiflow
 import argparse
 from openpyxl import load_workbook
+import asnake.logging as logging
+from asnake.client import ASnakeClient
 from datetime import datetime, timezone
 from pathlib import PureWindowsPath, PurePosixPath
 
 processingDir = "/backlog"
 SPE_DAO = "/SPE_DAO"
 
+# Setup ASpace connection
+logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="INFO")
+client = ASnakeClient()
+
 PREFIXES = ["apap", "ger", "mss", "ua"]
-def validate_package_id(col_id: str) -> bool:
+def validate_col_id(col_id: str) -> bool:
     pattern = r'^(apap\d{3}|ger\d{3}|mss\d{3}|ua\d{3}(?:\.\d{3})?)$'
     return bool(re.match(pattern, col_id))
 
@@ -93,7 +100,8 @@ for col in required_cols:
     if col not in headers:
         raise ValueError(f"Missing required column: {col}")
 
-col_index = {col: headers.index(col) for col in required_cols}
+# Build a map of all headers
+col_index = {h: i for i, h in enumerate(headers) if h}
 
 errors = []
 records = []
@@ -104,21 +112,38 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
 
     title = str(row[col_index["Title"]]).strip() if row[col_index["Title"]] else ""
     aspace_id = str(row[col_index["ArchivesSpace ID"]]).strip() if row[col_index["ArchivesSpace ID"]] else ""
+    original_file = str(row[col_index["Original file"]]).strip() if row[col_index["Original file"]] else ""
 
     if not (title and aspace_id):
         continue  # skip incomplete rows
 
+    # Ensure these fileds have text
+    missing_fields = []
+    for field in ["File Paths", "Input Format", "Resource Type", "Behavior", "License/Rights"]:
+        value = str(row[col_index[field]]).strip() if row[col_index[field]] else ""
+        if not value:
+            missing_fields.append(field)
+    if missing_fields:
+        errors.append(f"Missing required fields {missing_fields} in row {row_num}")
+
     # Handle File Paths
-    file_paths_raw = row[col_index["File Paths"]]
-    file_paths = []
-    if file_paths_raw:
-        file_paths = [fp.strip() for fp in str(file_paths_raw).split(";") if fp.strip()]
-        for fp in file_paths:
-            full_path = os.path.normpath(os.path.join(derivatives_path, fp))
+    file_path_raw = row[col_index["File Paths"]]
+    file_path = ""
+    if file_path_raw:
+        file_path = str(file_path_raw).strip()
+        full_path = os.path.normpath(os.path.join(derivatives_path, file_path))
+        if not os.path.isdir(full_path):
+            full_path = os.path.normpath(os.path.join(masters_path, file_path))
             if not os.path.isdir(full_path):
-                full_path = os.path.normpath(os.path.join(masters_path, fp))
-                if not os.path.isdir(full_path):
-                    errors.append(f"Missing path: {full_path} (row {row_num})")
+                errors.append(f"Missing path: {full_path} (row {row_num})")
+
+    # Check original file path
+    if len(original_file) > 0:
+        derivative_original = os.path.join(derivatives_path, os.path.normpath(original_file))
+        if not os.path.isfile(derivative_original):
+            masters_original = os.path.join(masters_path, os.path.normpath(original_file))
+            if not os.path.isfile(masters_original):
+                errors.append(f"Original file {original_file} does not exist (row {row_num}).")
 
     # Check if SPE_DAO path already exists
     object_path = os.path.join(SPE_DAO, ID, aspace_id)
@@ -145,7 +170,8 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
     records.append({
         "ArchivesSpace ID": aspace_id,
         "Title": title,
-        "File Paths": file_paths,
+        "File Path": full_path,
+        "Original file": original_file,
         "Input Format": input_fmt,
         "Resource Type": res_type,
         "License/Rights": license_val,
@@ -166,14 +192,14 @@ print(f"Parsed {len(records)} valid records.")
 for rec in records:
     title = rec["Title"]
     aspace_id = rec["ArchivesSpace ID"]
-    file_path = rec["File Paths"]
+    file_path = rec["File Path"]
     original_file = rec["Original file"]
     res_type = rec["Resource Type"]
     license = rec["License/Rights"]
     input_fmt = rec["Input Format"]
     behavior = rec["Behavior"]
 
-    print(f"Processing {title} ({aspace_id})...")
+    print(f"\tProcessing {title} ({aspace_id})...")
 
     collectionDir = os.path.join (SPE_DAO, ID)
     if not os.path.isdir(collectionDir):
@@ -205,48 +231,57 @@ for rec in records:
     with open(metadata_path, "w", encoding="utf-8") as f:
         yaml.dump(metadata, f, sort_keys=False, allow_unicode=True)
 
-    print(f"Created metadata.yml at {metadata_path}")
+    print(f"\tCreated metadata.yml at {metadata_path}")
 
     format_path = os.path.join(object_path, input_fmt.lower())
     os.mkdir(format_path)
     for file in os.scandir(file_path):
-        print (f"Moving {file.path} to {format_path}...")
+        #print (f"\t\tMoving {file.path} to {format_path}...")
+        print (f"\t\tMoving {file.path}...")
         shutil.copy2(file.path, format_path)
 
     # make thumbnail
-    print ("Creating thumbnail")
+    #print ("\tCreating thumbnail")
     iiiflow.make_thumbnail(ID, aspace_id)
 
     pdf_formats = ["png", "jpg"]
     if ".pdf" in original_file.lower():
-
+        print (f"\tMoving {original_file} to package as original file...")
+        original_path = os.path.join(derivatives_path, os.path.normpath(original_file))
+        if not os.path.isfile(original_path):
+            original_path = os.path.join(masters_path, os.path.normpath(original_file))
+            if not os.path.isfile(original_path):
+                raise FileNotFoundError(f"Missing original file {original_file}.")
+        pdf_path = os.path.join(object_path, "pdf")
+        os.mkdir(pdf_path)
+        shutil.copy2(original_path, pdf_path)
     elif input_fmt in pdf_formats:
-        print ("Creating alternative PDF...")
+        print ("\tCreating alternative PDF...")
         iiiflow.create_pdf(collection_ID, args.refID)
 
     # Create pyramidal tifs
-    print ("Creating pyramidal tifs (.ptifs)...")
-    iiiflow.create_ptif(ID, args.aspace_id)
+    print ("\tCreating pyramidal tifs (.ptifs)...")
+    iiiflow.create_ptif(ID, aspace_id)
 
     # OCR
-    print ("Recognizing text...")
+    print ("\tRecognizing text...")
     iiiflow.create_hocr(ID, aspace_id)
 
     # Index HOCR
-    print ("Indexing text for content search...")
-    iiiflow.index_hocr_to_solr(ID, aspace_id)
+    print ("\tIndexing text for content search...")
+    #iiiflow.index_hocr_to_solr(ID, aspace_id)
 
     # Create manifest
-    print ("Generating IIIF manifest...")
+    print ("\tGenerating IIIF manifest...")
     iiiflow.create_manifest(ID, aspace_id)
 
-    print ("Adding digital object record to ArchivesSpace...")
+    print ("\tAdding digital object record to ArchivesSpace...")
 
     # get url root from iiiflow config
     with open("/root/.iiiflow.yml", "r") as config_file:
         config = yaml.safe_load(config_file)
     manifest_url_root = config.get("manifest_url_root")
-    dao_url = f"{manifest_url_root}/{collection_ID}/{args.refID}/manifest.json"
+    dao_url = f"{manifest_url_root}/{ID}/{aspace_id}/manifest.json"
 
     file_version = {
         "jsonmodel_type": "file_version",
@@ -282,6 +317,8 @@ for rec in records:
     }
 
     # Upload new digital object
+    ref = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + aspace_id).json()
+    item = client.get(ref["archival_objects"][0]["ref"]).json()
     #new_dao = client.post("repositories/2/digital_objects", json=dao_object)
     #dao_uri = new_dao.json()["uri"]
     dao_uri = "blah"
@@ -296,7 +333,7 @@ for rec in records:
     }
 
     item["instances"].append(dao_link)
-
+    """
     if args.processing and len(args.processing) > 0:
         processing_note = {
             "jsonmodel_type": "note_multipart",
@@ -312,9 +349,9 @@ for rec in records:
         }
         item["notes"].append(processing_note)
         print (f"Added processing note.")
-
+    """
     #update_item = client.post(item["uri"], json=item)
-    print (f"Updated archival object record --> {update_item.status_code}")
+    #print (f"Updated archival object record --> {update_item.status_code}")
 
     #print ("Indexing record in ArcLight... (skipping)")
     

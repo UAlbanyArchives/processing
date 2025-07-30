@@ -331,7 +331,7 @@ def bulk_upload():
         else:
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-bulk-{packageID}.log"
             command = [
-                "python", "/code/utilities/bulk_upload.py", 
+                "python", "-u", "/code/utilities/bulk_upload.py", 
                 shlex.quote(packageID), 
                 "--sheet", shlex.quote(sheetFile)
             ]
