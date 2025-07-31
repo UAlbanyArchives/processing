@@ -139,7 +139,7 @@ def main():
 
                 base_name = os.path.splitext(file)[0]
                 # for PDF/Office, create a subfolder with the filename
-                if args.input.lower() in ("pdf", "doc", "docx", "ppt", "pptx"):
+                if args.input.lower() in ("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "csv"):
                     doc_out_dir = os.path.join(out_dir, base_name)
                     os.makedirs(doc_out_dir, exist_ok=True)
                     outprefix = os.path.join(doc_out_dir, base_name)
@@ -149,7 +149,7 @@ def main():
 
                 if args.input.lower() == "pdf":
                     extract_from_pdf(infile, outprefix, args.output.lower())
-                elif args.input.lower() in ("doc", "docx", "ppt", "pptx"):
+                elif args.input.lower() in ("doc", "docx", "xls", "xlsx", "ppt", "pptx", "csv"):
                     tmp_pdf_dir = os.path.join(package, "tmp_pdf")
                     os.makedirs(tmp_pdf_dir, exist_ok=True)
                     convert_office_to_pdf(infile, tmp_pdf_dir)
