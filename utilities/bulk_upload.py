@@ -257,7 +257,7 @@ for rec in records:
         shutil.copy2(original_path, pdf_path)
     elif input_fmt.lower() in pdf_formats:
         print ("\tCreating alternative PDF...")
-        iiiflow.create_pdf(ID, args.refID)
+        iiiflow.create_pdf(ID, aspace_id)
 
     # Create pyramidal tifs
     print ("\tCreating pyramidal tifs (.ptifs)...")
