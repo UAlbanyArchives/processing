@@ -143,7 +143,7 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
         if not os.path.isfile(derivative_original):
             masters_original = os.path.join(masters_path, os.path.normpath(original_file))
             if not os.path.isfile(masters_original):
-                errors.append(f"Original file {original_file} does not exist (row {row_num}).")
+                errors.append(f"Original file {original_file} does not exist in {derivative_original} or {masters_original} (row {row_num}).")
 
     # Check if SPE_DAO path already exists
     object_path = os.path.join(SPE_DAO, ID, aspace_id)
@@ -257,7 +257,7 @@ for rec in records:
         shutil.copy2(original_path, pdf_path)
     elif input_fmt.lower() in pdf_formats:
         print ("\tCreating alternative PDF...")
-        iiiflow.create_pdf(collection_ID, args.refID)
+        iiiflow.create_pdf(ID, args.refID)
 
     # Create pyramidal tifs
     print ("\tCreating pyramidal tifs (.ptifs)...")
