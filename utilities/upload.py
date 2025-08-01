@@ -226,7 +226,6 @@ def main():
     }
 
     item["instances"].append(dao_link)
-    update_item = client.post(item["uri"], json=item)
 
     if args.processing and len(args.processing) > 0:
         processing_note = {

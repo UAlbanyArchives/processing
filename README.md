@@ -16,7 +16,12 @@ If you don't have the default development test directories required, you can cre
 python setup-dev.py
 ```
 
-Run the app in development mode:
+Build the image:
+```
+docker build -t "processing" .
+```
+
+Once the image is built you can run the app in development mode without rebuilding:
 ```
 docker-compose up
 ```
