@@ -30,7 +30,7 @@ ALLOWED_RESOURCE_TYPES = {
     "Audio", "Bound Volume", "Dataset", "Document", "Image", "Map",
     "Mixed Materials", "Pamphlet", "Periodical", "Slides", "Video", "Other"
 }
-ALLOWED_LICENSES = {"CC BY", "CC BY-NC", "Unknown"}
+ALLOWED_LICENSES = {"CC BY", "CC BY-NC-SA", "Unknown"}
 ALLOWED_BEHAVIORS = {"paged", "individuals", "continuous"}
 
 # License and rights lookup
