@@ -27,8 +27,8 @@ def validate_col_id(col_id: str) -> bool:
 # Validations
 ALLOWED_INPUT_FORMATS = {"jpg", "png"}
 ALLOWED_RESOURCE_TYPES = {
-    "Audio", "Bound Volume", "Dataset", "Document", "Image", "Map",
-    "Mixed Materials", "Pamphlet", "Periodical", "Slides", "Video", "Other"
+    "audio", "bound volume", "dataset", "document", "image", "map",
+    "mixed materials", "pamphlet", "periodical", "slides", "video", "other"
 }
 ALLOWED_LICENSES = {"CC BY", "CC BY-NC-SA", "Unknown"}
 ALLOWED_BEHAVIORS = {"paged", "individuals", "continuous"}
@@ -156,7 +156,7 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
         errors.append(f"Invalid Input Format '{input_fmt}' in row {row_num}")
 
     res_type = str(row[col_index["Resource Type"]]).strip() if row[col_index["Resource Type"]] else ""
-    if res_type and res_type not in ALLOWED_RESOURCE_TYPES:
+    if res_type and res_type.lower() not in ALLOWED_RESOURCE_TYPES:
         errors.append(f"Invalid Resource Type '{res_type}' in row {row_num}")
 
     license_val = str(row[col_index["License/Rights"]]).strip() if row[col_index["License/Rights"]] else ""
@@ -164,7 +164,7 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
         errors.append(f"Invalid License '{license_val}' in row {row_num}")
 
     behavior = str(row[col_index["Behavior"]]).strip().lower() if row[col_index["Behavior"]] else ""
-    if behavior and behavior not in ALLOWED_BEHAVIORS:
+    if behavior and behavior.lower() not in ALLOWED_BEHAVIORS:
         errors.append(f"Invalid Behavior '{behavior}' in row {row_num}")
 
     records.append({
@@ -213,8 +213,8 @@ for rec in records:
     # Build metadata.yml
     metadata = {
         "preservation_package": args.package,
-        "resource_type": res_type,
-        "behavior": behavior,
+        "resource_type": res_type.title(),
+        "behavior": behavior.lower(),
         "date_uploaded": datetime.now(timezone.utc).isoformat(),
     }
     if len(original_file) > 0:
