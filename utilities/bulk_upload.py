@@ -319,9 +319,9 @@ for rec in records:
     # Upload new digital object
     ref = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + aspace_id).json()
     item = client.get(ref["archival_objects"][0]["ref"]).json()
-    #new_dao = client.post("repositories/2/digital_objects", json=dao_object)
-    #dao_uri = new_dao.json()["uri"]
-    dao_uri = "blah"
+    new_dao = client.post("repositories/2/digital_objects", json=dao_object)
+    dao_uri = new_dao.json()["uri"]
+    #dao_uri = "blah"
     print (f"Added digital object record {dao_uri}")
 
     # Attach new digital object instance to archival object
@@ -350,8 +350,8 @@ for rec in records:
         item["notes"].append(processing_note)
         print (f"Added processing note.")
     """
-    #update_item = client.post(item["uri"], json=item)
-    #print (f"Updated archival object record --> {update_item.status_code}")
+    update_item = client.post(item["uri"], json=item)
+    print (f"Updated archival object record --> {update_item.status_code}")
 
     #print ("Indexing record in ArcLight... (skipping)")
     
