@@ -124,11 +124,12 @@ def main():
     masters_count = 0
     derivatives_count = 0
     file_list = []
-    for input_file in os.listdir(masters):
-        input_file_path = os.path.join(masters, input_file)
-        if os.path.isfile(input_file_path) and input_file.endswith(f".{args.input_format.lower()}"):
-            masters_count += 1
-            file_list.append(input_file_path)
+    if os.path.isdir(masters):
+        for input_file in os.listdir(masters):
+            input_file_path = os.path.join(masters, input_file)
+            if os.path.isfile(input_file_path) and input_file.endswith(f".{args.input_format.lower()}"):
+                masters_count += 1
+                file_list.append(input_file_path)
     if masters_count == 0:
         for input_file in os.listdir(derivatives):
             input_file_path = os.path.join(derivatives, input_file)
