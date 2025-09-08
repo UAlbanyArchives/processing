@@ -329,7 +329,7 @@ for rec in records:
         "jsonmodel_type": "instance",
         "digital_object": {"ref": dao_uri},
         "instance_type": "digital_object",
-        "is_representative": False,
+        "is_representative": True,
     }
 
     item["instances"].append(dao_link)
