@@ -156,10 +156,10 @@ def list():
             colID = packageID.split("_")[0].split("-")[0]
             if log_file:
                 with open(log_file, "a") as f:
-                    f.write("Copying empty asInventory sheet to metadata directory...\n")
+                    f.write("Copying empty Bulk_Upload_Sheet sheet to metadata directory...\n")
             else:
-                print ("Copying empty asInventory sheet to metadata directory...")
-            shutil.copy2("/code/static/asInventory.xlsx", f"/backlog/{colID}/{packageID}/metadata")
+                print ("Copying empty Bulk_Upload_Sheet sheet to metadata directory...")
+            shutil.copy2("/code/static/Bulk_Upload_Sheet.xlsx", f"/backlog/{colID}/{packageID}/metadata")
             listFiles(packageID, True, log_file)
 
             success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
@@ -170,7 +170,7 @@ def list():
 @app.route('/sheet', methods=['GET'])
 def downloadSheet():
     sheetPath = "/code/static"
-    return send_from_directory(sheetPath, "asInventory.xlsx", as_attachment=True)
+    return send_from_directory(sheetPath, "Bulk_Upload_Sheet.xlsx", as_attachment=True)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
