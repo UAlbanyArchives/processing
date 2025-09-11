@@ -269,7 +269,7 @@ for rec in records:
 
     # Index HOCR
     print ("\tIndexing text for content search...")
-    #iiiflow.index_hocr_to_solr(ID, aspace_id)
+    iiiflow.index_hocr_to_solr(ID, aspace_id)
 
     # Create manifest
     print ("\tGenerating IIIF manifest...")
