@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from iiiflow import collections, index_hocr_to_solr
 
-log_path = "/media/Library/SPE_Automated/reindex.log"
+log_path = "/DigitizationExtentTracker/reindex.log"
 
 def log(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
