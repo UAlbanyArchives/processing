@@ -131,6 +131,8 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
     file_path = ""
     if file_path_raw:
         file_path = str(file_path_raw).strip()
+        if "|" in file_path:
+            errors.append(f"File path does not support multiple paths or pipes (|), (row {row_num})")
         full_path = os.path.normpath(os.path.join(derivatives_path, file_path))
         if not os.path.isdir(full_path):
             full_path = os.path.normpath(os.path.join(masters_path, file_path))
@@ -182,6 +184,7 @@ if errors:
     print("Validation errors found:")
     for e in errors:
         print(" -", e)
+    print ("Exiting.")
     sys.exit()
 else:
     print("All records validated successfully!")
