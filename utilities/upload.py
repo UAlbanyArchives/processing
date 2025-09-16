@@ -1,4 +1,5 @@
 import os
+import sys
 import yaml
 import uuid
 import shutil
@@ -216,8 +217,15 @@ def main():
 
     # Upload new digital object
     new_dao = client.post("repositories/2/digital_objects", json=dao_object)
-    dao_uri = new_dao.json()["uri"]
-    print (f"Added digital object record {dao_uri}")
+    if new_dao.status_code == 200:
+        dao_uri = new_dao.json()["uri"]
+        print (f"Added digital object record {dao_uri}")
+    else:
+        print (f"Failed digital object record --> {new_dao.status_code}")
+        print (json.dumps(dao_object, indent=4))
+        print (f"Failed digital object record --> {new_dao.status_code}")
+        print (new_dao.reason)
+        sys.exit()
 
     # Attach new digital object instance to archival object
     dao_link = {
@@ -246,9 +254,14 @@ def main():
         print (f"Added processing note.")
 
     update_item = client.post(item["uri"], json=item)
-    print (f"Updated archival object record --> {update_item.status_code}")
-
-    #print ("Indexing record in ArcLight... (skipping)")
+    if update_item.status_code == 200:
+        print (f"Updated archival object record --> {update_item.status_code}")
+    else:
+        print (f"Failed updating archival object record --> {update_item.status_code}")
+        print (json.dumps(item, indent=4))
+        print (f"Failed updating archival object record --> {update_item.status_code}")
+        print (update_item.reason)
+        sys.exit()
     
     print ("Success!")
     print (f"Check out digital object at:")
