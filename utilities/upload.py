@@ -236,6 +236,9 @@ def main():
         "is_representative": True,
     }
 
+    # Ensure all other instances are is_representative = False
+    for instance in item["instances"]:
+        instance["is_representative"] = False
     item["instances"].append(dao_link)
 
     if args.processing and len(args.processing) > 0:
