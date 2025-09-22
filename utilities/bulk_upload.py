@@ -192,7 +192,9 @@ else:
 print(f"Parsed {len(records)} valid records.")
 
 # Loop though validated sheet to upload files
+error_count = 0
 for rec in records:
+    error_switch = False
     title = rec["Title"]
     aspace_id = rec["ArchivesSpace ID"]
     file_path = rec["File Path"]
@@ -323,9 +325,14 @@ for rec in records:
     ref = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + aspace_id).json()
     item = client.get(ref["archival_objects"][0]["ref"]).json()
     new_dao = client.post("repositories/2/digital_objects", json=dao_object)
-    dao_uri = new_dao.json()["uri"]
-    #dao_uri = "blah"
-    print (f"Added digital object record {dao_uri}")
+    if new_dao.status_code != 200:
+        error_switch = True
+        print (json.dumps(dao_object, indent=4))
+        print (f"Failed adding digital object record --> {new_dao.status_code}")
+        print (new_dao.reason)
+    else:
+        dao_uri = new_dao.json()["uri"]
+        print (f"Added digital object record {dao_uri} --> {new_dao.status_code}")
 
     # Attach new digital object instance to archival object
     dao_link = {
@@ -335,7 +342,11 @@ for rec in records:
         "is_representative": True,
     }
 
+    # Ensure all other instances are is_representative = False
+    for instance in item["instances"]:
+        instance["is_representative"] = False
     item["instances"].append(dao_link)
+
     """
     if args.processing and len(args.processing) > 0:
         processing_note = {
@@ -354,14 +365,26 @@ for rec in records:
         print (f"Added processing note.")
     """
     update_item = client.post(item["uri"], json=item)
-    print (f"Updated archival object record --> {update_item.status_code}")
+    if update_item.status_code == 200:
+        print (f"Updated archival object record --> {update_item.status_code}")
+    else:
+        error_switch = True
+        print (json.dumps(item, indent=4))
+        print (f"Failed updating archival object record --> {update_item.status_code}")
+        print (update_item.reason)
 
     #print ("Indexing record in ArcLight... (skipping)")
     
-    print ("Success!")
+    if error_switch == False:
+        print ("Success!")
+    else:
+        error_count += 1
+        print ("Uploaded with errors.")
     print (f"Check out digital object at:")
-    #print (f"https://media.archives.albany.edu/test.html?collection={collection_ID}&id={args.refID}")
     print (f"https://media.archives.albany.edu?manifest={dao_url}")
 
 
-
+if error_count == len(records):
+    print (f"Success! {len(records)} records upload successfully.")
+else:
+    print (f"Errors: {error_count} out of {records} uploaded successfully.")
