@@ -8,6 +8,7 @@ import iiiflow
 import argparse
 
 from zoneinfo import ZoneInfo
+from bs4 import BeautifulSoup
 import asnake.logging as logging
 from asnake.client import ASnakeClient
 from datetime import datetime, timezone
@@ -91,7 +92,7 @@ def main():
     manifest_label = item["title"]
     for date in item["dates"]:
         manifest_label = manifest_label + f", {date['expression']}"
-    metadata["manifest_label"] = manifest_label
+    metadata["manifest_label"] = BeautifulSoup(manifest_label, "html.parser").get_text()
 
     collection_path = os.path.join("/SPE_DAO", collection_ID)
     object_path = os.path.join(collection_path, args.refID)
