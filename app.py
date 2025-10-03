@@ -10,6 +10,7 @@ from flask import render_template
 from forms.ingest import IngestForm
 from forms.accession import AccessionForm
 from forms.derivatives import DerivativesForm
+from forms.derivatives import AV_DerivativesForm
 from forms.list import ListForm
 from forms.upload import UploadForm
 from forms.bulk_upload import BulkForm
@@ -142,6 +143,51 @@ def derivatives():
                 flash(success_msg, 'success')
                 return redirect(url_for('derivatives'))
     return render_template('derivatives.html', error=error)
+
+@app.route('/av_derivatives', methods=['GET', 'POST'])
+def av_derivatives():
+    error = None
+    if request.method == 'POST':
+        form = AV_DerivativesForm(request.form)
+        packageID = form.packageID.data.strip()
+        inputFormat = form.inputFormat.data.lower().strip()
+        outputFormat = form.outputFormat.data.lower().strip()
+        subPath = form.subPath.data.strip()
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            collectionID = packageID.split("_")[0]
+            #look for matching files
+            ext_match = False
+            for root, dirs, files in os.walk(os.path.join("/backlog", collectionID, packageID)):
+                for file in files:
+                    if file.lower().endswith(inputFormat.lower()):
+                        ext_match = True
+            if not ext_match:
+                flash({"Files": f'Error: No {inputFormat} files found in package {packageID}.'})
+            else:
+                log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-convert_AV-{packageID}.log"
+                command = [
+                    "python", "-u", "/code/utilities/convertAV.py", 
+                    shlex.quote(packageID), 
+                    "-i", shlex.quote(inputFormat),
+                    "-o", shlex.quote(outputFormat)
+                ]
+                
+                if subPath:
+                    command.extend(["-p", shlex.quote(subPath)])
+                
+                # Add log file redirection
+                safe_command = " ".join(command) + f" >> {shlex.quote(log_file)} 2>&1 &"
+                
+                print ("running command: " + safe_command)
+                convert = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+
+                success_msg = Markup(f'<div>Success! Converting {inputFormat} files in {packageID} to {outputFormat}. Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+                flash(success_msg, 'success')
+                return redirect(url_for('av_derivatives'))
+    return render_template('av_derivatives.html', error=error)
 
 @app.route('/list', methods=['GET', 'POST'])
 def list():

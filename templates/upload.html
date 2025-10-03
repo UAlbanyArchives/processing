@@ -28,6 +28,8 @@
           <option value="tif">tif</option>
           <option value="jpg">jpg</option>
           <option value="pdf">pdf</option>
+          <option value="ogg_mp3">ogg & mp3</option>
+          <option value="webm">webm</option>
         </select>
         <div id="inputFormatHelp" class="form-text">File extension to upload, such as PNG, TIF, or PDF.</div>
       </div>
@@ -46,7 +48,7 @@
       <div class="col">
         <div class="mb-3 form-check">
           <input type="checkbox" class="form-check-input" name="createPDF" id="createPDF" checked="true">
-          <label class="form-check-label" for="createPDF">Create PDF alternative rendering</label>
+          <label class="form-check-label" for="createPDF">Create PDF alternative rendering (ignored for A/V)</label>
         </div>
       </div>
     </div>
@@ -84,7 +86,7 @@
           <option value="individuals">individuals</option>
           <option value="paged">paged</option>
         </select>
-        <div id="behaviorHelp" class="form-text">Set the <a href="https://iiif.io/api/cookbook/recipe/0011-book-3-behavior/">behavior for the IIIF object</a>. Use "paged" for a book-like view when the left and right pages are separate images.</div>
+        <div id="behaviorHelp" class="form-text">Set the <a href="https://iiif.io/api/cookbook/recipe/0011-book-3-behavior/">behavior for the IIIF object</a>. Use "paged" for a book-like view when the left and right pages are separate images. Ignored for A/V.</div>
       </div>
       </div>
     </div>

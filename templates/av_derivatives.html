@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% set active = "derivatives" %}
+{% block title %}Derivatives{% endblock %}
+{% block content %}
+  <h1>Create AV Derivatives</h1>
+  <div class="h5">
+    Hey, lets convert some AV files to web formats!
+  </div>
+
+  <div class="h5">
+    <a href="https://wiki.albany.edu/display/SCA/Creating+Derivatives">Wiki documentation</a>
+  </div>
+
+  <form action="/av_derivatives" method="post">
+      <div class="mb-3">
+      <label for="packageID" class="form-label">Package ID</label>
+      <input type="packageID" class="form-control" name="packageID" id="packageID" aria-describedby="packageIDHelp">
+      <div id="packageIDHelp" class="form-text">The folder name of the SIP, such as apap301_h4fMLPL48CuxFPLpYxTmkL or ua950.009_qUQbs7GYhzmB3uL3yjH5uX.</div>
+    </div>
+
+    <div class="row">
+      <div class="col-3">
+        <label for="inputFormat" class="form-label">Input format</label>
+        <select class="form-select" name="inputFormat" id="inputFormat" aria-describedby="inputFormatHelp">
+          <option value="wav">wav</option>
+          <option value="mp3">mp3</option>
+          <option value="mov">mov</option>
+          <option value="mp4">mp4</option>
+          <option value="m4v">m4v</option>
+        </select>
+        <div id="inputFormatHelp" class="form-text">File extension for preservation files in a SIP, such as WAV, MOV, or MP4.</div>
+      </div>
+      <div class="col-3">
+        <label for="outputFormat" class="form-label">Output format</label>
+        <select class="form-select"name="outputFormat" id="outputFormat" aria-describedby="outputFormatHelp">
+          <option value="ogg">ogg</option>
+          <option value="mp3">mp3</option>
+          <option value="webm">webm</option>
+        </select>
+        <div id="outputFormatHelp" class="form-text">File extension for access files you would like to create, such as OGG or WEBM.</div>
+      </div>
+      <div class="col-6">
+        <label for="subPath" class="form-label">Subpath (optional)</label>
+        <input class="form-control" name="subPath" id="optional" aria-describedby="subPathHelp">
+        <div id="subPathHelp" class="form-text">Only converts files in this folder within the /masters directory.</div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+{% endblock %}

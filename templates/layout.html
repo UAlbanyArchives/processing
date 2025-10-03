@@ -31,8 +31,14 @@
                 <a class="dropdown-item" href="/accession">Accession Born-Digital Materials</a>
               </div>
             </li>
-            <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'derivatives' }}" aria-current="{{'page' if active == 'derivatives' }}" href="/derivatives">Derivatives</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {{'active' if active == 'derivatives' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Derivatives
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/derivatives">Image Derivatives</a>
+                <a class="dropdown-item" href="/av_derivatives">AV Derivatives</a>
+              </div>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle {{'active' if active == 'upload' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

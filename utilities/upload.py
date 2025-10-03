@@ -67,11 +67,13 @@ def main():
     8. Index record in ArcLight
     """
 
+    av_formats = ["ogg_mp3", "webm"]
     metadata = {}
     metadata["preservation_package"] = args.packageID
     metadata["resource_type"] = args.resource_type
     metadata["license"] = args.license
-    metadata["behavior"] = args.behavior
+    if not args.input_format.lower() in av_formats:
+        metadata["behavior"] = args.behavior
     if args.rights_statement:
         metadata["rights_statement"] = args.rights_statement
     metadata["date_uploaded"] = datetime.now(ZoneInfo("America/New_York")).isoformat()
@@ -130,35 +132,49 @@ def main():
     if os.path.isdir(derivatives):
         for input_file in os.listdir(derivatives):
             input_file_path = os.path.join(derivatives, input_file)
-            if os.path.isfile(input_file_path) and input_file.endswith(f".{args.input_format.lower()}"):
-                derivatives_count += 1
-                file_list.append(input_file_path)
+            if args.input_format.lower() != "ogg_mp3":
+                if os.path.isfile(input_file_path) and input_file.lower().endswith(f".{args.input_format.lower()}"):
+                    derivatives_count += 1
+                    file_list.append(input_file_path)
+            else:
+                if os.path.isfile(input_file_path):
+                    if input_file.lower().endswith(".ogg") or input_file.lower().endswith(".mp3"):
+                        derivatives_count += 1
+                        file_list.append(input_file_path)
     if derivatives_count == 0:
         if os.path.isdir(masters):
             for input_file in os.listdir(masters):
                 input_file_path = os.path.join(masters, input_file)
-                if os.path.isfile(input_file_path) and input_file.endswith(f".{args.input_format.lower()}"):
-                    masters_count += 1
-                    file_list.append(input_file_path)
+                if args.input_format.lower() != "ogg_mp3":
+                    if os.path.isfile(input_file_path) and input_file.lower().endswith(f".{args.input_format.lower()}"):
+                        masters_count += 1
+                        file_list.append(input_file_path)
+                else:
+                    if os.path.isfile(input_file_path):
+                        if input_file.lower().endswith(".ogg") or input_file.lower().endswith(".mp3"):
+                            derivatives_count += 1
+                            file_list.append(input_file_path)
 
     if masters_count == 0 and derivatives_count == 0:
         raise FileNotFoundError(f"ERROR: no {args.input_format.lower()} files found in package {args.packageID} masters or derivatives.")
 
     # Move access files to SPE_DAO
-    format_path = os.path.join(object_path, args.input_format.lower())
-    if not os.path.isdir(format_path):
-        os.mkdir(format_path)
-    for image_file in file_list:
-        shutil.copy(image_file, format_path)
+    for access_file in file_list:
+        ext = os.path.splitext(access_file)[1][1:].lower()
+        format_path = os.path.join(object_path, ext)
+        if not os.path.isdir(format_path):
+            os.mkdir(format_path)
+        shutil.copy(access_file, format_path)
 
     # make thumbnail
     print ("Creating thumbnail")
     iiiflow.make_thumbnail(collection_ID, args.refID)
 
     pdf_formats = ["png", "jpg"]
-    if args.PDF.lower() == "true" and args.input_format.lower() in pdf_formats:
-        print ("Creating alternative PDF...")
-        iiiflow.create_pdf(collection_ID, args.refID)
+    if not args.input_format.lower() in av_formats:
+        if args.PDF.lower() == "true" and args.input_format.lower() in pdf_formats:
+            print ("Creating alternative PDF...")
+            iiiflow.create_pdf(collection_ID, args.refID)
 
     # Create pyramidal tifs
     print ("Creating pyramidal tifs (.ptifs)...")
