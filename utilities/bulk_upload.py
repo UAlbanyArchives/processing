@@ -25,7 +25,7 @@ def validate_col_id(col_id: str) -> bool:
     return bool(re.match(pattern, col_id))
 
 # Validations
-ALLOWED_INPUT_FORMATS = {"jpg", "png"}
+ALLOWED_INPUT_FORMATS = {"jpg", "png", "ogg", "mp3", "webm"}
 ALLOWED_RESOURCE_TYPES = {
     "audio", "bound volume", "dataset", "document", "image", "map",
     "mixed materials", "pamphlet", "periodical", "slides", "video", "other"
@@ -122,7 +122,12 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
     for field in ["File Paths", "Input Format", "Resource Type", "Behavior", "License/Rights"]:
         value = str(row[col_index[field]]).strip() if row[col_index[field]] else ""
         if not value:
-            missing_fields.append(field)
+            if field == "Behavior":
+                fmt = str(row[col_index["Input Format"]]).strip() if row[col_index["Input Format"]] else ""
+                if "png" in fmt.lower() or "jpg" in fmt.lower():
+                    missing_fields.append(field)
+            else:
+                missing_fields.append(field)
     if missing_fields:
         errors.append(f"Missing required fields {missing_fields} in row {row_num}")
 
@@ -219,11 +224,12 @@ for rec in records:
     metadata = {
         "preservation_package": args.package,
         "resource_type": res_type.title(),
-        "behavior": behavior.lower(),
         "date_uploaded": datetime.now(timezone.utc).isoformat(),
     }
     if len(original_file) > 0:
         metadata["original_file"] = original_file
+    if len(behavior) > 0:
+        metadata["behavior"] = behavior.lower()
 
     lic = license_val.strip() if license_val else ""
     if lic in LICENSE_LOOKUP:
@@ -249,7 +255,7 @@ for rec in records:
     #print ("\tCreating thumbnail")
     iiiflow.make_thumbnail(ID, aspace_id)
 
-    pdf_formats = ["png", "jpg"]
+    img_formats = ["png", "jpg"]
     if ".pdf" in original_file.lower():
         print (f"\tMoving {original_file} to package as original file...")
         original_path = os.path.join(derivatives_path, os.path.normpath(original_file))
@@ -260,21 +266,27 @@ for rec in records:
         pdf_path = os.path.join(object_path, "pdf")
         os.mkdir(pdf_path)
         shutil.copy2(original_path, pdf_path)
-    elif input_fmt.lower() in pdf_formats:
+    elif input_fmt.lower() in img_formats:
         print ("\tCreating alternative PDF...")
         iiiflow.create_pdf(ID, aspace_id)
 
     # Create pyramidal tifs
-    print ("\tCreating pyramidal tifs (.ptifs)...")
-    iiiflow.create_ptif(ID, aspace_id)
+    if input_fmt.lower() in img_formats:
+        print ("\tCreating pyramidal tifs (.ptifs)...")
+        iiiflow.create_ptif(ID, aspace_id)
 
-    # OCR
-    print ("\tRecognizing text...")
-    iiiflow.create_hocr(ID, aspace_id)
+    # OCR/transcription
+    if input_fmt.lower() in img_formats:
+        print ("\tRecognizing text...")
+        iiiflow.create_hocr(ID, aspace_id)
+    elif input_fmt.lower() in ("ogg", "mp3", "webm"):
+        print ("\tTranscribing...")
+        iiiflow.create_transcription(ID, aspace_id)
 
     # Index HOCR
-    print ("\tIndexing text for content search...")
-    iiiflow.index_hocr_to_solr(ID, aspace_id)
+    if input_fmt.lower() in img_formats:
+        print ("\tIndexing text for content search...")
+        iiiflow.index_hocr_to_solr(ID, aspace_id)
 
     # Create manifest
     print ("\tGenerating IIIF manifest...")
