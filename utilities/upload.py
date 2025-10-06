@@ -124,7 +124,9 @@ def main():
             win_path = PureWindowsPath(args.subPath)
             sub_path = Path(*win_path.parts)
         else:
-            sub_path = Path(os.path.normpath(args.subPath))
+            # Normalize and remove leading slash
+            subpath = os.path.normpath(subpath).lstrip(os.sep)
+            sub_path = Path(subpath)
         # Join with masters and derivatives base paths
         masters_path = Path(masters) / sub_path
         derivatives_path = Path(derivatives) / sub_path
@@ -150,10 +152,16 @@ def main():
 
         # Handle paired ogg/mp3 audio files
         if main_file.suffix.lower() in ['.ogg', '.mp3']:
-            # Determine the associated extension
             assoc_ext = '.mp3' if main_file.suffix.lower() == '.ogg' else '.ogg'
-            assoc_file_der = main_file.with_suffix(assoc_ext)
-            assoc_file_mast = Path(masters_path.parent, main_file.stem + assoc_ext)
+
+            if "derivatives" in str(main_file):
+                # main_file is in derivatives → check derivatives first, then masters
+                assoc_file_der = main_file.with_suffix(assoc_ext)
+                assoc_file_mast = Path(masters_path.parent, main_file.stem + assoc_ext)
+            else:
+                # main_file is in masters → check derivatives first, then masters
+                assoc_file_der = Path(derivatives_path.parent, main_file.stem + assoc_ext)
+                assoc_file_mast = main_file.with_suffix(assoc_ext)
 
             if assoc_file_der.is_file():
                 file_list.append(assoc_file_der)
