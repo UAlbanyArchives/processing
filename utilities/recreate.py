@@ -10,7 +10,7 @@ def main():
     parser.add_argument("--refID", required=True, help="A 32-character ArchivesSpace ID, e.g., '855f9efb1fae87fa3b6ef8c8a6e0a28d'.")
 
     args = parser.parse_args()
-    processingDir = "/backlog"
+    SPE_DAO = "/SPE_DAO"
 
     with open("/root/.iiiflow.yml", "r") as config_file:
         config = yaml.safe_load(config_file)
@@ -20,7 +20,7 @@ def main():
     print(f"Collection ID: {args.collectionID}")
     print(f"Object Ref ID: {args.refID}")
 
-    metadata_path = os.path.join(processingDir, args.collectionID, args.refID, "metadata.yml")
+    metadata_path = os.path.join(SPE_DAO, args.collectionID, args.refID, "metadata.yml")
     if not os.path.isfile(metadata_path):
         raise FileNotFoundError(f"Missing metadata file {metadata_path}.")
     with open(metadata_path, "r", encoding="utf-8") as f:

@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 import asnake.logging as logging
 from asnake.client import ASnakeClient
 from datetime import datetime, timezone
-from pathlib import PureWindowsPath, PurePosixPath
+from pathlib import Path, PureWindowsPath, PurePosixPath
 
 def main():
     parser = argparse.ArgumentParser(description="Process digital object upload arguments.")
@@ -117,46 +117,84 @@ def main():
         if not os.path.isdir(path):
             raise Exception("ERROR: " + str(args.packageID) + " is not a valid processing package.")
 
+    subpathIsFile = False
     if args.subPath:
+        # Normalize for Windows-style paths
         if "\\" in args.subPath:
-            winPath = PureWindowsPath(args.subPath)
-            masters = str(PurePosixPath(masters, *winPath.parts))
-            derivatives = str(PurePosixPath(derivatives, *winPath.parts))
+            win_path = PureWindowsPath(args.subPath)
+            sub_path = Path(*win_path.parts)
         else:
-            masters = os.path.join(masters, os.path.normpath(args.subPath))
-            derivatives = os.path.join(derivatives, os.path.normpath(args.subPath))
+            sub_path = Path(os.path.normpath(args.subPath))
+        # Join with masters and derivatives base paths
+        masters_path = Path(masters) / sub_path
+        derivatives_path = Path(derivatives) / sub_path
+        if masters_path.is_file() or derivatives_path.is_file():
+            subpathIsFile = True
+        else:
+            masters = str(masters_path)
+            derivatives = str(derivatives_path)
 
-    masters_count = 0
-    derivatives_count = 0
     file_list = []
-    if os.path.isdir(derivatives):
-        for input_file in os.listdir(derivatives):
-            input_file_path = os.path.join(derivatives, input_file)
-            if args.input_format.lower() != "ogg_mp3":
-                if os.path.isfile(input_file_path) and input_file.lower().endswith(f".{args.input_format.lower()}"):
-                    derivatives_count += 1
-                    file_list.append(input_file_path)
+    if subpathIsFile:
+        # Determine the main file
+        main_file = None
+        if derivatives_path.is_file() and derivatives_path.suffix[1:].lower() in args.input_format.lower():
+            main_file = derivatives_path
+        elif masters_path.is_file() and masters_path.suffix[1:].lower() in args.input_format.lower():
+            main_file = masters_path
+        else:
+            raise FileNotFoundError(
+                f"ERROR: {args.subPath} not found in package {args.packageID} masters or derivatives "
+                f"matching {args.input_format}."
+            )
+
+        # Handle paired ogg/mp3 audio files
+        if main_file.suffix.lower() in ['.ogg', '.mp3']:
+            # Determine the associated extension
+            assoc_ext = '.mp3' if main_file.suffix.lower() == '.ogg' else '.ogg'
+            assoc_file_der = main_file.with_suffix(assoc_ext)
+            assoc_file_mast = Path(masters_path.parent, main_file.stem + assoc_ext)
+
+            if assoc_file_der.is_file():
+                file_list.append(assoc_file_der)
+            elif assoc_file_mast.is_file():
+                file_list.append(assoc_file_mast)
             else:
-                if os.path.isfile(input_file_path):
-                    if input_file.lower().endswith(".ogg") or input_file.lower().endswith(".mp3"):
-                        derivatives_count += 1
-                        file_list.append(input_file_path)
-    if derivatives_count == 0:
-        if os.path.isdir(masters):
-            for input_file in os.listdir(masters):
-                input_file_path = os.path.join(masters, input_file)
+                raise FileNotFoundError(
+                    f"ERROR: Associated file for {main_file.name} with extension {assoc_ext} not found "
+                    f"in masters or derivatives. Does {assoc_ext} version exist in the backlog package?"
+                )
+    else:
+        masters_count = 0
+        derivatives_count = 0
+        if os.path.isdir(derivatives):
+            for input_file in os.listdir(derivatives):
+                input_file_path = os.path.join(derivatives, input_file)
                 if args.input_format.lower() != "ogg_mp3":
                     if os.path.isfile(input_file_path) and input_file.lower().endswith(f".{args.input_format.lower()}"):
-                        masters_count += 1
+                        derivatives_count += 1
                         file_list.append(input_file_path)
                 else:
                     if os.path.isfile(input_file_path):
                         if input_file.lower().endswith(".ogg") or input_file.lower().endswith(".mp3"):
                             derivatives_count += 1
                             file_list.append(input_file_path)
+        if derivatives_count == 0:
+            if os.path.isdir(masters):
+                for input_file in os.listdir(masters):
+                    input_file_path = os.path.join(masters, input_file)
+                    if args.input_format.lower() != "ogg_mp3":
+                        if os.path.isfile(input_file_path) and input_file.lower().endswith(f".{args.input_format.lower()}"):
+                            masters_count += 1
+                            file_list.append(input_file_path)
+                    else:
+                        if os.path.isfile(input_file_path):
+                            if input_file.lower().endswith(".ogg") or input_file.lower().endswith(".mp3"):
+                                derivatives_count += 1
+                                file_list.append(input_file_path)
 
-    if masters_count == 0 and derivatives_count == 0:
-        raise FileNotFoundError(f"ERROR: no {args.input_format.lower()} files found in package {args.packageID} masters or derivatives.")
+        if masters_count == 0 and derivatives_count == 0:
+            raise FileNotFoundError(f"ERROR: no {args.input_format.lower()} files found in package {args.packageID} masters or derivatives.")
 
     # Move access files to SPE_DAO
     for access_file in file_list:
@@ -180,13 +218,18 @@ def main():
     print ("Creating pyramidal tifs (.ptifs)...")
     iiiflow.create_ptif(collection_ID, args.refID)
 
-    # OCR
-    print ("Recognizing text...")
-    iiiflow.create_hocr(collection_ID, args.refID)
+    if not args.input_format.lower() in av_formats:
+        # OCR
+        print ("Recognizing text...")
+        iiiflow.create_hocr(collection_ID, args.refID)
 
-    # Index HOCR
-    print ("Indexing text for content search...")
-    iiiflow.index_hocr_to_solr(collection_ID, args.refID)
+        # Index HOCR
+        print ("Indexing text for content search...")
+        iiiflow.index_hocr_to_solr(collection_ID, args.refID)
+    else:
+        # Create AV transcription
+        print ("Transcribing...")
+        iiiflow.create_transcription(collection_ID, args.refID)
 
     # Create manifest
     print ("Generating IIIF manifest...")
