@@ -125,7 +125,7 @@ def main():
             sub_path = Path(*win_path.parts)
         else:
             # Normalize and remove leading slash
-            subpath = os.path.normpath(subpath).lstrip(os.sep)
+            subpath = os.path.normpath(args.subPath).lstrip(os.sep)
             sub_path = Path(subpath)
         # Join with masters and derivatives base paths
         masters_path = Path(masters) / sub_path
