@@ -1,5 +1,5 @@
 from wtforms import Form, StringField, SelectField, TextAreaField, BooleanField, validators
-from wtforms.validators import DataRequired, AnyOf
+from wtforms.validators import DataRequired, AnyOf, ValidationError
 from forms.custom_validators import validate_packageID, validate_refID
 
 class UploadForm(Form):
@@ -62,3 +62,13 @@ class UploadForm(Form):
         ],
         validators=[DataRequired(), AnyOf(["paged", "individuals"])],
     )
+
+    # Validate resource types match for AV formats
+    def validate_resource_type(form, field):
+        input_fmt = form.inputFormat.data
+
+        if input_fmt == "ogg_mp3" and field.data != "Audio":
+            raise ValidationError("If input format is 'ogg_mp3', resource type must be 'Audio'.")
+
+        if input_fmt == "webm" and field.data != "Video":
+            raise ValidationError("If input format is 'webm', resource type must be 'Video'.")
