@@ -138,8 +138,9 @@ def main():
 
     file_list = []
     if subpathIsFile:
-        # Determine the main file
+        # Determine the main file (prefer derivatives, then masters)
         main_file = None
+        # handle input_format like "ogg_mp3" (means accept either .ogg or .mp3)
         if derivatives_path.is_file() and derivatives_path.suffix[1:].lower() in args.input_format.lower():
             main_file = derivatives_path
         elif masters_path.is_file() and masters_path.suffix[1:].lower() in args.input_format.lower():
@@ -149,6 +150,8 @@ def main():
                 f"ERROR: {args.subPath} not found in package {args.packageID} masters or derivatives "
                 f"matching {args.input_format}."
             )
+        # Copy over the main (ogg) file
+        file_list.append(str(main_file))
 
         # Handle paired ogg/mp3 audio files
         if main_file.suffix.lower() in ['.ogg', '.mp3']:
