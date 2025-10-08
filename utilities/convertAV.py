@@ -142,7 +142,13 @@ def main():
             elif args.input.lower() in ("wav", "mp3") and args.output.lower() == "ogg":
                 extra_args = ["-codec:a", "libvorbis", "-q:a", "5"]
             elif args.input.lower() in ("mp4", "mov", "m4v") and args.output.lower() == "webm":
-                extra_args = ["-codec:v", "libvpx", "-b:v", "1M", "-codec:a", "libvorbis"]
+                extra_args = [
+                    "-codec:v", "libvpx",
+                    "-b:v", "1M",
+                    "-codec:a", "libvorbis",
+                    "-auto-alt-ref", "0",
+                    "-row-mt", "1",
+                ]
 
             print(f"\nConverting {infile} → {out_file}")
             convert_av(infile, out_file, extra_args)
