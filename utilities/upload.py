@@ -93,7 +93,12 @@ def main():
 
     manifest_label = item["title"]
     for date in item["dates"]:
-        manifest_label = manifest_label + f", {date['expression']}"
+        if 'expression' in date.keys():
+            manifest_label = manifest_label + f", {date['expression']}"
+        elif 'end' in date.keys():
+            manifest_label = manifest_label + f", {date['begin']}-{date['end']}"
+        else:
+            manifest_label = manifest_label + f", {date['begin']}"
     metadata["manifest_label"] = BeautifulSoup(manifest_label, "html.parser").get_text()
 
     collection_path = os.path.join("/SPE_DAO", collection_ID)
