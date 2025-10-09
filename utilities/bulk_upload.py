@@ -10,7 +10,7 @@ from openpyxl import load_workbook
 import asnake.logging as logging
 from asnake.client import ASnakeClient
 from datetime import datetime, timezone
-from pathlib import PureWindowsPath, PurePosixPath
+from pathlib import Path, PureWindowsPath, PurePosixPath
 
 processingDir = "/backlog"
 SPE_DAO = "/SPE_DAO"
@@ -25,7 +25,7 @@ def validate_col_id(col_id: str) -> bool:
     return bool(re.match(pattern, col_id))
 
 # Validations
-ALLOWED_INPUT_FORMATS = {"jpg", "png", "ogg", "mp3", "webm"}
+ALLOWED_INPUT_FORMATS = {"jpg", "png", "ogg_mp3", "webm"}
 ALLOWED_RESOURCE_TYPES = {
     "audio", "bound volume", "dataset", "document", "image", "map",
     "mixed materials", "pamphlet", "periodical", "slides", "video", "other"
@@ -244,12 +244,50 @@ for rec in records:
 
     print(f"\tCreated metadata.yml at {metadata_path}")
 
-    format_path = os.path.join(object_path, input_fmt.lower())
+    if input_fmt.lower() == "ogg_mp3":
+        format_path = os.path.join(object_path, "ogg")
+        assoc_path = os.path.join(object_path, "mp3")
+        os.mkdir(assoc_path)
+    else:
+        format_path = os.path.join(object_path, input_fmt.lower())
     os.mkdir(format_path)
-    for file in os.scandir(file_path):
-        #print (f"\t\tMoving {file.path} to {format_path}...")
-        print (f"\t\tMoving {file.path}...")
-        shutil.copy2(file.path, format_path)
+    if os.path.isdir(file_path):
+        for file in os.scandir(file_path):
+            print (f"\t\tMoving {file.path} to {format_path}...")
+            shutil.copy2(file.path, format_path)
+    elif os.path.isfile(file_path):
+        if input_fmt.lower() == "ogg_mp3":
+            src = Path(file_path)
+            ext = src.suffix.lower()
+            base = src.with_suffix("")
+            
+            # Determine paired extension (.ogg or .mp3)
+            paired_ext = ".mp3" if ext == ".ogg" else ".ogg"
+
+            # Define destinations
+            dest_primary = format_path if ext == ".ogg" else assoc_path
+            dest_associated = assoc_path if ext == ".ogg" else format_path
+
+            # Copy the primary file
+            shutil.copy2(src, dest_primary)
+
+            # Build the paired filename in both derivatives and masters
+            paired_name = base.with_suffix(paired_ext).name
+            paired_der = src.parent / paired_name
+            paired_masters = Path(str(src).replace("/derivatives/", "/masters/")).parent / paired_name
+
+            # Pick whichever exists
+            paired_source = paired_der if paired_der.is_file() else paired_masters
+
+            if not paired_source.is_file():
+                raise FileNotFoundError(f"Missing matching {paired_ext} for {file_path}")
+
+            # Copy the paired file
+            shutil.copy2(paired_source, dest_associated)
+        else:
+            shutil.copy2(file_path, format_path)
+    else:
+        raise FileNotFoundError(f"Error: File path {file_path} does not exist.")
 
     # make thumbnail
     #print ("\tCreating thumbnail")
@@ -399,4 +437,4 @@ for rec in records:
 if error_count == len(records):
     print (f"Success! {len(records)} records upload successfully.")
 else:
-    print (f"Errors: {error_count} out of {records} uploaded successfully.")
+    print (f"Errors: {error_count} out of {len(records)} uploaded successfully.")
