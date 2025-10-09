@@ -139,10 +139,10 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
         if "|" in file_path:
             errors.append(f"File path does not support multiple paths or pipes (|), (row {row_num})")
         full_path = os.path.normpath(os.path.join(derivatives_path, file_path))
-        if not os.path.isdir(full_path):
+        if not os.path.exists(full_path):
             full_path = os.path.normpath(os.path.join(masters_path, file_path))
-            if not os.path.isdir(full_path):
-                errors.append(f"Missing path: {full_path} (row {row_num})")
+            if not os.path.exists(full_path):
+                errors.append(f"Missing path: {file_path} not found in {derivatives_path} or {masters_path} (row {row_num})")
 
     # Check original file path
     if len(original_file) > 0:
