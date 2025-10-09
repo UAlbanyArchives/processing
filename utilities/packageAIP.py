@@ -35,7 +35,7 @@ SIP.load(sipPackage)
 
 print ("Validating SIP " + args.package + "...")
 if not SIP.bag.is_valid():
-    raise ("ERROR: SIP " + args.package + " is not a valid bag!.")
+    raise Exception("ERROR: SIP " + args.package + " is not a valid bag!.")
 print("Finished Validating at " + str(datetime.now()))
 
 print ("Creating AIP " + args.package + "...")
