@@ -102,7 +102,7 @@ def main():
     print ("Success!")
     dao_url = f"{manifest_url_root}/{args.collectionID}/{args.refID}/manifest.json"
     print (f"Check out digital object at:")
-    print (f"https://media.archives.albany.edu/test.html?manifest={dao_url}")
+    print (f"https://media.archives.albany.edu?manifest={dao_url}")
 
 if __name__ == "__main__":
     main()
