@@ -434,7 +434,7 @@ for rec in records:
     print (f"https://media.archives.albany.edu?manifest={dao_url}")
 
 
-if error_count == len(records):
+if error_count > 0:
     print (f"Success! {len(records)} records upload successfully.")
 else:
-    print (f"Errors: {error_count} out of {len(records)} uploaded successfully.")
+    print (f"Errors: {len(records) - error_count} out of {len(records)} uploaded successfully.")
