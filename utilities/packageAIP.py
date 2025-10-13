@@ -1,6 +1,9 @@
 import os
+import stat
+import time
 import shutil
 import argparse
+import traceback
 from datetime import datetime
 from packages.AIP import ArchivalInformationPackage
 from packages.SIP import SubmissionInformationPackage
@@ -15,6 +18,39 @@ processingDir = "/backlog"
 sipDir = "/Archives/SIP"
 aipDir = "/Archives/AIP"
 logDir = "/logs"
+
+def safe_rmtree(path, retries=5, delay=1.0):
+    """Robust recursive directory removal with retries and better diagnostics."""
+
+    def on_rm_error(func, path, exc_info):
+        # Try to remove read-only or locked files
+        try:
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+        except Exception as e:
+            print(f"Failed to remove {path}: {e}")
+
+    for attempt in range(1, retries + 1):
+        try:
+            shutil.rmtree(path, onerror=on_rm_error)
+            if not os.path.exists(path):
+                print(f"Removed {path}")
+                return
+        except Exception as e:
+            print(f"Attempt {attempt}/{retries} to remove {path} failed: {e}")
+            traceback.print_exc()
+
+        # See if something’s still in there
+        if os.path.exists(path):
+            for root, dirs, files in os.walk(path):
+                for f in files:
+                    print(f"    remaining file: {os.path.join(root, f)}")
+                for d in dirs:
+                    print(f"    remaining dir: {os.path.join(root, d)}")
+        time.sleep(delay)
+
+    # If it still exists after all retries, raise a clear error
+    raise OSError(f"ould not completely remove {path} after {retries} attempts.")
 
 
 print("Began at " + str(datetime.now()))
@@ -93,7 +129,7 @@ if not args.update:
         
         # remove processing package
         print (f"Removing processing package {args.package}...")
-        shutil.rmtree(package)
+        safe_rmtree(package)
         print (f"Removed processing package at {datetime.now()}.")
         collectionDir = os.path.join(processingDir, colID)
         if len(os.listdir(collectionDir)) == 0:
@@ -119,7 +155,7 @@ else:
     if AIP.bag.is_valid():
         # remove processing package
         print ("Removing processing package " + args.package  + "...")
-        shutil.rmtree(package)
+        safe_rmtree(package)
         collectionDir = os.path.join(processingDir, colID)
         if len(os.listdir(collectionDir)) == 0:
             os.rmdir(collectionDir)
