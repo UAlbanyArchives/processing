@@ -253,8 +253,9 @@ for rec in records:
     os.mkdir(format_path)
     if os.path.isdir(file_path):
         for file in os.scandir(file_path):
-            print (f"\t\tMoving {file.path} to {format_path}...")
-            shutil.copy2(file.path, format_path)
+            if file.name.lower().endswith(input_fmt):
+                print (f"\t\tMoving {file.path} to {format_path}...")
+                shutil.copy2(file.path, format_path)
     elif os.path.isfile(file_path):
         if input_fmt.lower() == "ogg_mp3":
             src = Path(file_path)
