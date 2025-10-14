@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         xfonts-base \
         curl \
         dpkg-dev \
+        procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Fix ImageMagick policy
