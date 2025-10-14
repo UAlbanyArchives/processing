@@ -436,6 +436,6 @@ for rec in records:
 
 
 if error_count > 0:
-    print (f"Success! {len(records)} records upload successfully.")
-else:
     print (f"Errors: {len(records) - error_count} out of {len(records)} uploaded successfully.")
+else:
+    print (f"Success! {len(records)} records upload successfully.")    
