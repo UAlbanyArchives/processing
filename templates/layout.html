@@ -86,9 +86,13 @@
               </div>
             {% elif category == "error" %}
               <div class="alert alert-danger" role="alert">
-                {% for msg in message.keys() %}
-                  <p class="mb-0"><b>{{ msg }}</b>: {{ message[msg][0] }}</p>
-                {% endfor %}
+                {% if message is mapping %}
+                  {% for field, errors in message.items() %}
+                    <p class="mb-0"><b>{{ field }}</b>: {{ errors[0] }}</p>
+                  {% endfor %}
+                {% else %}
+                  <p class="mb-0">{{ message }}</p>
+                {% endif %}
               </div>
             {% else %}
               <div class="alert alert-warning" role="alert">
