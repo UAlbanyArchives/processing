@@ -17,5 +17,5 @@ class RecreateForm(Form):
             ("all", "Rebuild Entire IIIF Object"),
             ("all-no-pdf", "Rebuild Entire IIIF Object (skipping PDF)"),
         ],
-        validators=[DataRequired(), AnyOf(["thumbnail", "ptif", "ocr", "manifest", "pdf", "all", "all-no-pdf"])],
+        validators=[DataRequired(), AnyOf(["thumbnail", "ptif", "ocr", "manifest", "pdf", "index", "transcribe", "all", "all-no-pdf"])],
     )
