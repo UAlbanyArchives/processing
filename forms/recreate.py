@@ -13,6 +13,7 @@ class RecreateForm(Form):
             ("ptif", "Create PTIFs"),
             ("ocr", "Recognize Text (OCR)"),
             ("index", "Index OCR text (for content search)"),
+            ("transcribe", "Transcribe AV"),
             ("all", "Rebuild Entire IIIF Object"),
             ("all-no-pdf", "Rebuild Entire IIIF Object (skipping PDF)"),
         ],
