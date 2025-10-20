@@ -318,7 +318,7 @@ for rec in records:
     if input_fmt.lower() in img_formats:
         print ("\tRecognizing text...")
         iiiflow.create_hocr(ID, aspace_id)
-    elif input_fmt.lower() in ("ogg", "mp3", "webm"):
+    elif input_fmt.lower() in ("ogg", "mp3", "ogg_mp3", "webm"):
         print ("\tTranscribing...")
         iiiflow.create_transcription(ID, aspace_id)
 
