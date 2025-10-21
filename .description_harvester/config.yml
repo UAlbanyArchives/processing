@@ -1,8 +1,11 @@
 cache_expiration: 86400
 last_query: 0
 metadata:
+- ss:
+  - replay_content
 - ssi:
   - date_uploaded
+  - replay_pdf
 - ssm:
   - date_digitized
   - extent
