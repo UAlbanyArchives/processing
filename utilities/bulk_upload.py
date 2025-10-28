@@ -27,8 +27,8 @@ def validate_col_id(col_id: str) -> bool:
 # Validations
 ALLOWED_INPUT_FORMATS = {"jpg", "png", "ogg_mp3", "webm"}
 ALLOWED_RESOURCE_TYPES = {
-    "audio", "bound volume", "dataset", "document", "image", "map",
-    "mixed materials", "pamphlet", "periodical", "slides", "video", "other"
+    "audio", "bound volume", "email", "dataset", "document", "image", "map",
+    "mixed materials", "pamphlet", "periodical", "slides", "video", "web archives", "other"
 }
 ALLOWED_LICENSES = {"CC BY", "CC BY-NC-SA", "Unknown"}
 ALLOWED_BEHAVIORS = {"paged", "individuals", "continuous"}

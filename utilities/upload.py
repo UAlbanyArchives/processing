@@ -23,8 +23,8 @@ def main():
     parser.add_argument("--refID", required=True, help="A 32-character ArchivesSpace ID, e.g., '855f9efb1fae87fa3b6ef8c8a6e0a28d'.")
     parser.add_argument("--PDF", required=True, help="Option to create a PDF alternative rendering.")
     parser.add_argument("--resource_type", required=True, choices=[
-        "Document", "Audio", "Bound Volume", "Dataset", "Image", "Map", 
-        "Mixed Materials", "Pamphlet", "Periodical", "Slides", "Video", "Other"
+        "Document", "Audio", "Bound Volume", "Email", "Dataset", "Image", "Map", 
+        "Mixed Materials", "Pamphlet", "Periodical", "Slides", "Video", "Web Archives", "Other"
     ], help="The type of resource being uploaded.")
     parser.add_argument("--license", required=True, choices=[
         "https://creativecommons.org/licenses/by-nc-sa/4.0/",

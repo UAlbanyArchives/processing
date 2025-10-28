@@ -21,6 +21,7 @@ class UploadForm(Form):
             ("Document", "Document"),
             ("Audio", "Audio"),
             ("Bound Volume", "Bound Volume"),
+            ("Email", "Email"),
             ("Dataset", "Dataset"),
             ("Image", "Image"),
             ("Map", "Map"),
@@ -29,9 +30,10 @@ class UploadForm(Form):
             ("Periodical", "Periodical"),
             ("Slides", "Slides"),
             ("Video", "Video"),
+            ("Web Archives", "Web Archives"),
             ("Other", "Other (avoid)"),
         ],
-        validators=[DataRequired(), AnyOf(["Document", "Audio", "Bound Volume", "Dataset", "Image", "Map", "Mixed Materials", "Pamphlet", "Periodical", "Slides", "Video", "Other"])],
+        validators=[DataRequired(), AnyOf(["Document", "Audio", "Bound Volume", "Email", "Dataset", "Image", "Map", "Mixed Materials", "Pamphlet", "Periodical", "Slides", "Video", "Web Archives", "Other"])],
     )
 
     license = SelectField(
