@@ -8,6 +8,10 @@ import json
 # Base processing directory
 PROCESSING_DIR = "/backlog"
 
+audio_formats = ("wav", "mp3", "m4a")
+video_formats = ("mp4", "mov", "m4v", "avi", "wmv")
+all_input_formats = audio_formats + video_formats
+
 def run_command(cmd, check=True):
     """Run a shell command and print output."""
     print("Running:", " ".join(cmd))
@@ -77,7 +81,7 @@ def convert_av(infile, outfile, extra_args=None):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("package", help="Package ID (e.g. ua950.012_Xf5xzeim7n4yE6tjKKHqLM).")
-    parser.add_argument("-i", "--input", required=True, help="Input format (wav, mp3, m4v, mp4, mov, m4v).")
+    parser.add_argument("-i", "--input", required=True, choices=all_input_formats, help="Input format")
     parser.add_argument("-o", "--output", required=True, help="Output format (mp3, ogg, webm).")
     parser.add_argument("-p", "--path", help="Subpath relative to masters directory.", default=None)
     return parser.parse_args()
@@ -113,9 +117,9 @@ def main():
             raise FileNotFoundError(f"Invalid subpath {args.path}")
 
     input_exts = [f".{args.input.lower()}"]
-    if args.input.lower() in ("wav", "mp3", "m4a"):
+    if args.input.lower() in audio_formats:
         input_exts = [f".{args.input.lower()}"]
-    elif args.input.lower() in ("mp4", "mov", "m4v"):
+    elif args.input.lower() in video_formats:
         input_exts = [f".{args.input.lower()}"]
     
     # Conversion loop
@@ -135,11 +139,11 @@ def main():
 
             # Set sensible defaults for ffmpeg conversions
             extra_args = []
-            if args.input.lower() in ("wav", "mp3", "m4a") and args.output.lower() == "mp3":
+            if args.input.lower() in audio_formats and args.output.lower() == "mp3":
                 extra_args = ["-codec:a", "libmp3lame", "-q:a", "2"]
-            elif args.input.lower() in ("wav", "mp3", "m4a") and args.output.lower() == "ogg":
+            elif args.input.lower() in audio_formats and args.output.lower() == "ogg":
                 extra_args = ["-codec:a", "libvorbis", "-q:a", "5"]
-            elif args.input.lower() in ("mp4", "mov", "m4v") and args.output.lower() == "webm":
+            elif args.input.lower() in video_formats and args.output.lower() == "webm":
                 extra_args = [
                     "-codec:v", "libvpx",
                     "-b:v", "1M",
