@@ -9,7 +9,7 @@ import json
 PROCESSING_DIR = "/backlog"
 
 audio_formats = ("wav", "mp3", "m4a")
-video_formats = ("mp4", "mov", "m4v", "avi", "wmv")
+video_formats = ("mp4", "mov", "m4v", "avi", "wmv", "mpg")
 all_input_formats = audio_formats + video_formats
 
 def run_command(cmd, check=True):
