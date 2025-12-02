@@ -105,6 +105,9 @@ def main():
         else:
             masters = os.path.join(masters, os.path.normpath(args.path))
         if not os.path.isdir(masters):
+            print ("Directory not found.")
+            if os.path.isfile(masters):
+                print ("Path takes a folder not individual files.")
             raise FileNotFoundError(f"Invalid subpath {args.path}")
 
     input_exts = [f".{args.input.lower()}"]
