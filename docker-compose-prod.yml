@@ -16,6 +16,8 @@ services:
       - '/media/Library/SPE_DAO:/SPE_DAO'
       - '/media/Library/SPE_Automated/processing_logs:/logs'
       - '/media/Library/SPE_Processing/ndpaList.txt:/ndpaList.txt'
+    environment:
+      - DESCRIPTION_HARVESTER_PLUGIN_DIR=/code/description_harvester_plugins
     tty: true
     stdin_open: true
     restart: always

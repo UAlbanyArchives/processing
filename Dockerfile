@@ -56,6 +56,9 @@ RUN mkdir -p /root/.description_harvester
 COPY .description_harvester/ /root/.description_harvester/
 COPY . /code
 
+# Set up description harvester plugins
+RUN git clone https://github.com/UAlbanyArchives/description_harvester_plugins.git
+
 RUN chmod +x ./gunicorn.sh
 
 #ENTRYPOINT ["./gunicorn.sh"]

@@ -18,6 +18,8 @@ services:
       - '..\flask_processing_app_testing\processing_logs:/logs'
       - '..\flask_processing_app_testing\ndpaList.txt:/ndpaList.txt'
     working_dir: /code
+    environment:
+      - DESCRIPTION_HARVESTER_PLUGIN_DIR=/code/description_harvester_plugins
     command: >
       bash -c "export FLASK_DEBUG="1" &&
               flask run --host=0.0.0.0"
