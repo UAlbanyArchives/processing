@@ -345,9 +345,9 @@ def main():
         sys.exit()
     
     print ("Success!")
-    print (f"Check out digital object at:")
+    print (f"Check out the digital object at:")
     #print (f"https://media.archives.albany.edu/test.html?collection={collection_ID}&id={args.refID}")
-    print (f"https://media.archives.albany.edu?manifest={dao_url}")
+    print (dao_url)
 
 if __name__ == "__main__":
     main()

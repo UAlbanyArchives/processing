@@ -432,8 +432,8 @@ for rec in records:
     else:
         error_count += 1
         print ("Uploaded with errors.")
-    print (f"Check out digital object at:")
-    print (f"https://media.archives.albany.edu?manifest={dao_url}")
+    print (f"Check out the digital object at:")
+    print (dao_url)
 
 
 if error_count > 0:
