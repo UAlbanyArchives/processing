@@ -258,7 +258,7 @@ def main():
         config = yaml.safe_load(config_file)
     viewer_url = "https://media.archives.albany.edu?manifest="
     manifest_url_root = config.get("manifest_url_root")
-    dao_url = f"{viewer_url}{manifest_url_root}/{collection_ID}/{aspace_id}/manifest.json"
+    dao_url = f"{viewer_url}{manifest_url_root}/{collection_ID}/{args.refID}/manifest.json"
 
     file_version = {
         "jsonmodel_type": "file_version",
