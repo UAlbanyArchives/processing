@@ -1,5 +1,6 @@
 cache_expiration: 86400
 last_query: 0
+component_id_separator: ""
 online_content_label: "View only online content"
 metadata:
 - ss:
