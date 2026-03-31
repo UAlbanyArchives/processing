@@ -105,6 +105,11 @@ col_index = {h: i for i, h in enumerate(headers) if h}
 
 errors = []
 records = []
+preflight_rows = []
+preflight_errors = []
+
+required_upload_fields = ["File Paths", "Input Format", "Resource Type", "License/Rights"]
+behavior_required_types = {"document", "bound volume", "pamphlet", "periodical"}
 
 for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7):
     if all(v is None for v in row):
@@ -114,35 +119,74 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
     aspace_id = str(row[col_index["ArchivesSpace ID"]]).strip() if row[col_index["ArchivesSpace ID"]] else ""
     original_file = str(row[col_index["Original file"]]).strip() if row[col_index["Original file"]] else ""
 
+    file_paths_val = str(row[col_index["File Paths"]]).strip() if row[col_index["File Paths"]] else ""
+    input_fmt = str(row[col_index["Input Format"]]).strip().lower() if row[col_index["Input Format"]] else ""
+    res_type = str(row[col_index["Resource Type"]]).strip() if row[col_index["Resource Type"]] else ""
+    license_val = str(row[col_index["License/Rights"]]).strip() if row[col_index["License/Rights"]] else ""
+    behavior = str(row[col_index["Behavior"]]).strip().lower() if row[col_index["Behavior"]] else ""
+
+    required_values = {
+        "File Paths": file_paths_val,
+        "Input Format": input_fmt,
+        "Resource Type": res_type,
+        "License/Rights": license_val,
+    }
+
+    if all(not value for value in required_values.values()) and not behavior:
+        print(f"Skipping {title}")
+        continue
+
+    missing_required = [field for field, value in required_values.items() if not value]
+    if missing_required:
+        preflight_errors.append(
+            f"Row {row_num} has partial upload metadata. Missing required fields: {missing_required}"
+        )
+        continue
+
+    if res_type.lower() in behavior_required_types and not behavior:
+        preflight_errors.append(
+            f"Row {row_num} requires Behavior when Resource Type is '{res_type}'."
+        )
+        continue
+
+    preflight_rows.append({
+        "row_num": row_num,
+        "Title": title,
+        "ArchivesSpace ID": aspace_id,
+        "Original file": original_file,
+        "File Paths": file_paths_val,
+        "Input Format": input_fmt,
+        "Resource Type": res_type,
+        "License/Rights": license_val,
+        "Behavior": behavior,
+    })
+
+if preflight_errors:
+    raise ValueError("\n".join(preflight_errors))
+
+for preflight_row in preflight_rows:
+    row_num = preflight_row["row_num"]
+    title = preflight_row["Title"]
+    aspace_id = preflight_row["ArchivesSpace ID"]
+    original_file = preflight_row["Original file"]
+    file_paths_val = preflight_row["File Paths"]
+    input_fmt = preflight_row["Input Format"]
+    res_type = preflight_row["Resource Type"]
+    license_val = preflight_row["License/Rights"]
+    behavior = preflight_row["Behavior"]
+
     if not (title and aspace_id):
         continue  # skip incomplete rows
 
-    # Ensure these fileds have text
-    missing_fields = []
-    for field in ["File Paths", "Input Format", "Resource Type", "Behavior", "License/Rights"]:
-        value = str(row[col_index[field]]).strip() if row[col_index[field]] else ""
-        if not value:
-            if field == "Behavior":
-                fmt = str(row[col_index["Input Format"]]).strip() if row[col_index["Input Format"]] else ""
-                if "png" in fmt.lower() or "jpg" in fmt.lower():
-                    missing_fields.append(field)
-            else:
-                missing_fields.append(field)
-    if missing_fields:
-        errors.append(f"Missing required fields {missing_fields} in row {row_num}")
-
     # Handle File Paths
-    file_path_raw = row[col_index["File Paths"]]
-    file_path = ""
-    if file_path_raw:
-        file_path = str(file_path_raw).strip()
-        if "|" in file_path:
-            errors.append(f"File path does not support multiple paths or pipes (|), (row {row_num})")
-        full_path = os.path.normpath(os.path.join(derivatives_path, file_path))
+    file_path = file_paths_val
+    if "|" in file_path:
+        errors.append(f"File path does not support multiple paths or pipes (|), (row {row_num})")
+    full_path = os.path.normpath(os.path.join(derivatives_path, file_path))
+    if not os.path.exists(full_path):
+        full_path = os.path.normpath(os.path.join(masters_path, file_path))
         if not os.path.exists(full_path):
-            full_path = os.path.normpath(os.path.join(masters_path, file_path))
-            if not os.path.exists(full_path):
-                errors.append(f"Missing path: {file_path} not found in {derivatives_path} or {masters_path} (row {row_num})")
+            errors.append(f"Missing path: {file_path} not found in {derivatives_path} or {masters_path} (row {row_num})")
 
     # Check original file path
     if len(original_file) > 0:
@@ -158,19 +202,15 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
         errors.append(f"SPE_DAO object path '{object_path}' already exists for row {row_num}")
 
     # Validate controlled vocab fields
-    input_fmt = str(row[col_index["Input Format"]]).strip().lower() if row[col_index["Input Format"]] else ""
     if input_fmt and input_fmt.lower() not in ALLOWED_INPUT_FORMATS:
         errors.append(f"Invalid Input Format '{input_fmt}' in row {row_num}")
 
-    res_type = str(row[col_index["Resource Type"]]).strip() if row[col_index["Resource Type"]] else ""
     if res_type and res_type.lower() not in ALLOWED_RESOURCE_TYPES:
         errors.append(f"Invalid Resource Type '{res_type}' in row {row_num}")
 
-    license_val = str(row[col_index["License/Rights"]]).strip() if row[col_index["License/Rights"]] else ""
     if license_val and license_val not in ALLOWED_LICENSES:
         errors.append(f"Invalid License '{license_val}' in row {row_num}")
 
-    behavior = str(row[col_index["Behavior"]]).strip().lower() if row[col_index["Behavior"]] else ""
     if behavior and behavior.lower() not in ALLOWED_BEHAVIORS:
         errors.append(f"Invalid Behavior '{behavior}' in row {row_num}")
 
