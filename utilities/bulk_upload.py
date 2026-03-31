@@ -68,9 +68,14 @@ def count_copy_candidates(source_path: str, input_fmt: str) -> int:
                 return 0
             paired_ext = ".mp3" if ext == ".ogg" else ".ogg"
             paired_name = src.with_suffix(paired_ext).name
-            paired_der = src.parent / paired_name
-            paired_masters = Path(str(src).replace("/derivatives/", "/masters/")).parent / paired_name
-            paired_exists = paired_der.is_file() or paired_masters.is_file()
+            paired_same = src.parent / paired_name
+            src_str = str(src)
+            if "/masters/" in src_str:
+                cross_str = src_str.replace("/masters/", "/derivatives/", 1)
+            else:
+                cross_str = src_str.replace("/derivatives/", "/masters/", 1)
+            paired_cross = Path(cross_str).parent / paired_name
+            paired_exists = paired_same.is_file() or paired_cross.is_file()
             return 2 if paired_exists else 1
         return 1 if Path(source_path).suffix.lower() == f".{fmt}" else 0
 
@@ -365,13 +370,18 @@ for item in ordered_items:
             # Copy the primary file
             shutil.copy2(src, dest_primary)
 
-            # Build the paired filename in both derivatives and masters
+            # Build the paired filename - check same dir first, then cross derivatives/masters
             paired_name = base.with_suffix(paired_ext).name
-            paired_der = src.parent / paired_name
-            paired_masters = Path(str(src).replace("/derivatives/", "/masters/")).parent / paired_name
+            paired_same = src.parent / paired_name
+            src_str = str(src)
+            if "/masters/" in src_str:
+                cross_str = src_str.replace("/masters/", "/derivatives/", 1)
+            else:
+                cross_str = src_str.replace("/derivatives/", "/masters/", 1)
+            paired_cross = Path(cross_str).parent / paired_name
 
             # Pick whichever exists
-            paired_source = paired_der if paired_der.is_file() else paired_masters
+            paired_source = paired_same if paired_same.is_file() else paired_cross
 
             if not paired_source.is_file():
                 raise FileNotFoundError(f"Missing matching {paired_ext} for {file_path}")
