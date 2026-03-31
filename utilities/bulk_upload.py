@@ -37,6 +37,7 @@ ALLOWED_BEHAVIORS = {"paged", "individuals", "continuous"}
 LICENSE_LOOKUP = {
     "CC BY": "https://creativecommons.org/licenses/by/4.0/",
     "CC BY-NC-SA": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "Public Domain": "https://creativecommons.org/publicdomain/mark/1.0/"
 }
 RIGHTS_FALLBACK = "https://rightsstatements.org/page/InC-EDU/1.0/"
 
@@ -107,6 +108,7 @@ errors = []
 records = []
 preflight_rows = []
 preflight_errors = []
+skipped_titles = []
 
 required_upload_fields = ["File Paths", "Input Format", "Resource Type", "License/Rights"]
 behavior_required_types = {"document", "bound volume", "pamphlet", "periodical"}
@@ -133,7 +135,7 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
     }
 
     if all(not value for value in required_values.values()) and not behavior:
-        print(f"Skipping {title}")
+        skipped_titles.append(title)
         continue
 
     missing_required = [field for field, value in required_values.items() if not value]
@@ -235,6 +237,9 @@ else:
     print("All records validated successfully!")
 
 print(f"Parsed {len(records)} valid records.")
+
+for skipped_title in skipped_titles:
+    print(f"Skipping {skipped_title}")
 
 # Loop though validated sheet to upload files
 error_count = 0

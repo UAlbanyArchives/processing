@@ -41,10 +41,10 @@ class UploadForm(Form):
         choices=[
             ("https://creativecommons.org/licenses/by-nc-sa/4.0/", "CC BY-NC-SA"),
             ("https://creativecommons.org/licenses/by/4.0/", "CC BY"),
-            ("https://creativecommons.org/publicdomain/zero/1.0/", "Public Domain"),
+            ("https://creativecommons.org/publicdomain/mark/1.0/", "Public Domain"),
             ("Unknown", "Unknown"),
         ],
-        validators=[DataRequired(), AnyOf(["https://creativecommons.org/licenses/by-nc-sa/4.0/", "https://creativecommons.org/licenses/by/4.0/", "https://creativecommons.org/publicdomain/zero/1.0/", "Unknown"])],
+        validators=[DataRequired(), AnyOf(["https://creativecommons.org/licenses/by-nc-sa/4.0/", "https://creativecommons.org/licenses/by/4.0/", "https://creativecommons.org/publicdomain/mark/1.0/", "Unknown"])],
     )
 
     rights_statement = SelectField(

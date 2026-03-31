@@ -29,7 +29,7 @@ def main():
     parser.add_argument("--license", required=True, choices=[
         "https://creativecommons.org/licenses/by-nc-sa/4.0/",
         "https://creativecommons.org/licenses/by/4.0/",
-        "https://creativecommons.org/publicdomain/zero/1.0/", 
+        "https://creativecommons.org/publicdomain/mark/1.0/",
         "Unknown"
     ], help="License type for the resource.")
     parser.add_argument("--rights_statement", choices=[
