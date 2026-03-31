@@ -41,6 +41,41 @@ LICENSE_LOOKUP = {
 }
 RIGHTS_FALLBACK = "https://rightsstatements.org/page/InC-EDU/1.0/"
 
+
+def count_copy_candidates(source_path: str, input_fmt: str) -> int:
+    fmt = (input_fmt or "").lower().strip()
+    if not source_path or not fmt:
+        return 0
+
+    if os.path.isdir(source_path):
+        count = 0
+        for entry in os.scandir(source_path):
+            if not entry.is_file():
+                continue
+            name = entry.name.lower()
+            if fmt == "ogg_mp3":
+                if name.endswith(".ogg") or name.endswith(".mp3"):
+                    count += 1
+            elif name.endswith(f".{fmt}"):
+                count += 1
+        return count
+
+    if os.path.isfile(source_path):
+        if fmt == "ogg_mp3":
+            src = Path(source_path)
+            ext = src.suffix.lower()
+            if ext not in (".ogg", ".mp3"):
+                return 0
+            paired_ext = ".mp3" if ext == ".ogg" else ".ogg"
+            paired_name = src.with_suffix(paired_ext).name
+            paired_der = src.parent / paired_name
+            paired_masters = Path(str(src).replace("/derivatives/", "/masters/")).parent / paired_name
+            paired_exists = paired_der.is_file() or paired_masters.is_file()
+            return 2 if paired_exists else 1
+        return 1 if Path(source_path).suffix.lower() == f".{fmt}" else 0
+
+    return 0
+
 parser = argparse.ArgumentParser()
 parser.add_argument("package", help="ID for package you are processing, e.g. 'ua950.012_Xf5xzeim7n4yE6tjKKHqLM'")
 parser.add_argument("-s", "--sheet", required=True,
@@ -108,7 +143,7 @@ errors = []
 records = []
 preflight_rows = []
 preflight_errors = []
-skipped_titles = []
+ordered_items = []
 
 required_upload_fields = ["File Paths", "Input Format", "Resource Type", "License/Rights"]
 behavior_required_types = {"document", "bound volume", "pamphlet", "periodical"}
@@ -135,7 +170,7 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
     }
 
     if all(not value for value in required_values.values()) and not behavior:
-        skipped_titles.append(title)
+        ordered_items.append({"action": "skip", "title": title})
         continue
 
     missing_required = [field for field, value in required_values.items() if not value]
@@ -162,6 +197,7 @@ for row_num, row in enumerate(ws.iter_rows(min_row=7, values_only=True), start=7
         "License/Rights": license_val,
         "Behavior": behavior,
     })
+    ordered_items.append({"action": "process", "row_num": row_num})
 
 if preflight_errors:
     raise ValueError("\n".join(preflight_errors))
@@ -190,6 +226,13 @@ for preflight_row in preflight_rows:
         if not os.path.exists(full_path):
             errors.append(f"Missing path: {file_path} not found in {derivatives_path} or {masters_path} (row {row_num})")
 
+    if os.path.exists(full_path):
+        copy_candidates = count_copy_candidates(full_path, input_fmt)
+        if copy_candidates == 0:
+            errors.append(
+                f"No files matching Input Format '{input_fmt}' found at '{file_path}' (row {row_num})"
+            )
+
     # Check original file path
     if len(original_file) > 0:
         derivative_original = os.path.join(derivatives_path, os.path.normpath(original_file))
@@ -217,6 +260,7 @@ for preflight_row in preflight_rows:
         errors.append(f"Invalid Behavior '{behavior}' in row {row_num}")
 
     records.append({
+        "row_num": row_num,
         "ArchivesSpace ID": aspace_id,
         "Title": title,
         "File Path": full_path,
@@ -238,12 +282,16 @@ else:
 
 print(f"Parsed {len(records)} valid records.")
 
-for skipped_title in skipped_titles:
-    print(f"Skipping {skipped_title}")
-
 # Loop though validated sheet to upload files
+records_by_row = {rec["row_num"]: rec for rec in records}
 error_count = 0
-for rec in records:
+for item in ordered_items:
+    if item["action"] == "skip":
+        print(f"\tSkipping {item['title']}")
+        continue
+    rec = records_by_row.get(item["row_num"])
+    if rec is None:
+        continue
     error_switch = False
     title = rec["Title"]
     aspace_id = rec["ArchivesSpace ID"]
