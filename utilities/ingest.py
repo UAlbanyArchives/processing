@@ -21,7 +21,10 @@ def main(ID, path=None, accession=None):
             raise Exception("ERROR: no " + ID + " directory exists for ingest in " + defaultPath)
     else:
         if not os.path.isdir(path):
-            raise Exception("ERROR: " + str(path) + " is not a valid path.")        
+            raise Exception("ERROR: " + str(path) + " is not a valid path.")
+        count_contents = len(os.listdir(path))
+        if count_contents < 1:
+            raise Exception(f"ERROR: {path} has {count_contents} files.")  
     print ("Reading " + path)
         
             
