@@ -3,9 +3,9 @@ from wtforms.validators import DataRequired, AnyOf, ValidationError
 from forms.custom_validators import validate_packageID, validate_refID
 
 class UploadForm(Form):
-    packageID = StringField('Package ID', [validators.Length(min=28, max=32), validate_packageID])
+    packageID = StringField('Package ID', [validators.Length(min=26, max=32), validate_packageID])
     subPath = StringField('Sub Path', [validators.Length(min=0, max=199)])
-    refID = StringField('Ref ID', [validators.Length(min=32, max=32), validate_refID])
+    refID = StringField('Ref ID', [validators.Length(min=6, max=32), validate_refID])
     createPDF = BooleanField("Include PDF", default=True)
     content_warning = TextAreaField("Content Warning")
 
