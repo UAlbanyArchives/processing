@@ -57,6 +57,10 @@ def validate_packageID(form, field):
             raise validators.ValidationError(f'Invalid package. Missing {subfolder} directory.')
 
 def validate_refID(form, field):
+    package_id = form.packageID.data.strip() if getattr(form, "packageID", None) and form.packageID.data else ""
+    if package_id.startswith(("mathes", "etd", "rare_book")):
+        return
+
     r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + field.data.strip())
     if r.status_code != 200:
         raise validators.ValidationError(f'Invalid ASpace request. \"{field.data.strip()}\" returns HTTP {str(r.status_code)}')
