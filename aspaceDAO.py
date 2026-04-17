@@ -1,4 +1,5 @@
 import uuid
+import os
 import asnake.logging as logging
 from asnake.client import ASnakeClient
 
@@ -8,15 +9,22 @@ client = ASnakeClient()
 def getCollectionID(refID):
     # returns a collection ID for a refID
     r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + refID)
-    if r.status_code != 200:
-        raise LookupError(f"ERROR: refID {refID} not found in ArchivesSpace.")
-    else:
+    if r.status_code == 200:
         item = client.get(r.json()["archival_objects"][0]["ref"]).json()
         resourceURI = item["resource"]["ref"]
         resource = client.get(resourceURI).json()
         collectionID = resource["id_0"]
         
         return collectionID
+
+    # Fallback for collections that use external IDs and are not present in ASpace.
+    dao_root = "/SPE_DAO"
+    fallback_collections = ["etd", "mathes", "rare_book"]
+    for collectionID in fallback_collections:
+        if os.path.isdir(os.path.join(dao_root, collectionID, refID)):
+            return collectionID
+
+    raise LookupError(f"ERROR: refID {refID} not found in ArchivesSpace or in DAO fallback collections.")
 
 def addDAO(refID, hyraxURI, log_file):
 

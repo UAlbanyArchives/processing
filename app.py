@@ -20,6 +20,7 @@ from forms.add_items import AddItemsForm
 from forms.recreate import RecreateForm
 
 from utilities.listFiles import listFiles
+from utilities.id_normalization import normalize_collection_id
 from aspaceDAO import addDAO
 from add_items import add_aspace_items
 from hyrax import addAccession
@@ -44,7 +45,8 @@ def ingest():
     error = None
     if request.method == 'POST':
         form = IngestForm(request.form)
-        collectionID = form.collectionID.data.strip()
+        collectionID = normalize_collection_id(form.collectionID.data)
+        form.collectionID.data = collectionID
         #altPath = form.altPath.data
         if not form.validate():
             flash(form.errors, 'error')
@@ -69,7 +71,8 @@ def accession():
     if request.method == 'POST':
         form = AccessionForm(request.form)
         accessionID = form.accessionID.data.strip()
-        collectionID = form.collectionID.data.strip()
+        collectionID = normalize_collection_id(form.collectionID.data)
+        form.collectionID.data = collectionID
         #altPath = form.altPath.data
         if not form.validate():
             flash(form.errors, 'error')
@@ -432,7 +435,8 @@ def reindex():
     error = None
     if request.method == 'POST':
         form = ReindexForm(request.form)
-        collectionID = form.collectionID.data.strip().lower()
+        collectionID = normalize_collection_id(form.collectionID.data)
+        form.collectionID.data = collectionID
         if not form.validate():
             flash(form.errors, 'error')
         else:

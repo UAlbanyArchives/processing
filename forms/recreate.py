@@ -1,9 +1,9 @@
 from wtforms import Form, StringField, SelectField, validators
 from wtforms.validators import DataRequired, AnyOf
-from forms.custom_validators import validate_collectionID_DAO, validate_refID
+from forms.custom_validators import validate_refID_recreate
 
 class RecreateForm(Form):
-    refID = StringField('Ref ID', [validators.Length(min=32, max=32), validate_refID])
+    refID = StringField('Ref ID', [validators.Length(min=3, max=128), validate_refID_recreate])
     mode = SelectField(
         "Mode",
         choices=[

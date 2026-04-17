@@ -1,6 +1,8 @@
 from description_harvester import harvest
+from id_normalization import normalize_collection_id
 
 def reindex(collection_ID):
+    collection_ID = normalize_collection_id(collection_ID)
 
     if collection_ID.startswith("ger"):
         repo = "ger"

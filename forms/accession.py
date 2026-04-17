@@ -3,5 +3,5 @@ from forms.custom_validators import validate_collectionID_ingest, validate_acces
 
 class AccessionForm(Form):
     accessionID = StringField('Accession ID', [validators.Length(min=8, max=8), validate_accessionID])
-    collectionID = StringField('Collection ID', [validators.Length(min=5, max=9), validate_collectionID_ingest])
+    collectionID = StringField('Collection ID', [validators.Length(min=3, max=50), validate_collectionID_ingest])
     #altPath = StringField('Alternative Path', [validators.Length(min=0, max=35)])

@@ -5,6 +5,7 @@ import bagit
 from datetime import datetime
 from listFiles import listFiles
 from packages.SIP import SubmissionInformationPackage
+from id_normalization import normalize_collection_id
 
 #version of ingest.py
 version = "0.1"
@@ -12,6 +13,9 @@ defaultPath = "/ingest"
 
 
 def main(ID, path=None, accession=None):
+    ID = normalize_collection_id(ID)
+    if len(ID) == 0:
+        raise Exception("ERROR: Collection ID cannot be empty.")
 
     if path == None:
         if not os.path.isdir(defaultPath):

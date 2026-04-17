@@ -13,6 +13,7 @@ import asnake.logging as logging
 from asnake.client import ASnakeClient
 from datetime import datetime, timezone
 from pathlib import Path, PureWindowsPath, PurePosixPath
+from id_normalization import normalize_collection_id
 
 def main():
     parser = argparse.ArgumentParser(description="Process digital object upload arguments.")
@@ -43,6 +44,9 @@ def main():
 
     args = parser.parse_args()
     processingDir = "/backlog"
+    package_collection_id = normalize_collection_id(args.packageID.rsplit("_", 1)[0])
+    external_ref_collections = {"etd", "mathes", "rare_book"}
+    skip_aspace = package_collection_id in external_ref_collections
 
     print("Uploading Digital Object with the following entries:")
     print(f"  Package ID: {args.packageID}")
@@ -78,28 +82,37 @@ def main():
         metadata["rights_statement"] = args.rights_statement
     metadata["date_uploaded"] = datetime.now(ZoneInfo("America/New_York")).isoformat()
 
-    logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="INFO")
-    client = ASnakeClient()
+    collection_ID = package_collection_id
+    item = None
+    client = None
 
-    ref = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + args.refID).json()
-    item = client.get(ref["archival_objects"][0]["ref"]).json()
+    if not skip_aspace:
+        logging.setup_logging(filename="/logs/aspace-flask.log", filemode="a", level="INFO")
+        client = ASnakeClient()
 
-    resourceURI = item["resource"]["ref"]
-    resource = client.get(resourceURI).json()
+        ref = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + args.refID).json()
+        item = client.get(ref["archival_objects"][0]["ref"]).json()
 
-    collection_ID = resource["id_0"]
-    if collection_ID != args.packageID.split("_")[0]:
-        raise ValueError(f"ERROR: Collection ID in package ID does not match the collection linked to this ArchivesSpace ref_id.")
+        resourceURI = item["resource"]["ref"]
+        resource = client.get(resourceURI).json()
 
-    manifest_label = item["title"]
-    for date in item["dates"]:
-        if 'expression' in date.keys():
-            manifest_label = manifest_label + f", {date['expression']}"
-        elif 'end' in date.keys():
-            manifest_label = manifest_label + f", {date['begin']}-{date['end']}"
-        else:
-            manifest_label = manifest_label + f", {date['begin']}"
-    metadata["manifest_label"] = BeautifulSoup(manifest_label, "html.parser").get_text()
+        aspace_collection_id = normalize_collection_id(resource["id_0"])
+        if aspace_collection_id != package_collection_id:
+            raise ValueError("ERROR: Collection ID in package ID does not match the collection linked to this ArchivesSpace ref_id.")
+        collection_ID = aspace_collection_id
+
+        manifest_label = item["title"]
+        for date in item["dates"]:
+            if 'expression' in date.keys():
+                manifest_label = manifest_label + f", {date['expression']}"
+            elif 'end' in date.keys():
+                manifest_label = manifest_label + f", {date['begin']}-{date['end']}"
+            else:
+                manifest_label = manifest_label + f", {date['begin']}"
+        metadata["manifest_label"] = BeautifulSoup(manifest_label, "html.parser").get_text()
+    else:
+        print(f"Skipping ArchivesSpace validation and DAO record creation for collection '{collection_ID}'.")
+        metadata["manifest_label"] = args.refID
 
     collection_path = os.path.join("/SPE_DAO", collection_ID)
     object_path = os.path.join(collection_path, args.refID)
@@ -250,6 +263,18 @@ def main():
     # Create manifest
     print ("Generating IIIF manifest...")
     iiiflow.create_manifest(collection_ID, args.refID)
+
+    if skip_aspace:
+        print("Skipping ArchivesSpace digital object creation for external ref_id workflow.")
+        print("Success!")
+        print("Check out the digital object at:")
+        with open("/root/.iiiflow.yml", "r") as config_file:
+            config = yaml.safe_load(config_file)
+        viewer_url = "https://media.archives.albany.edu?manifest="
+        manifest_url_root = config.get("manifest_url_root")
+        dao_url = f"{viewer_url}{manifest_url_root}/{collection_ID}/{args.refID}/manifest.json"
+        print(dao_url)
+        return
 
     print ("Adding digital object record to ArchivesSpace...")
 
