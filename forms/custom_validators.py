@@ -57,18 +57,20 @@ def validate_packageID(form, field):
             raise validators.ValidationError(f'Invalid package. Missing {subfolder} directory.')
 
 def validate_refID(form, field):
+    package_id = form.packageID.data.strip() if getattr(form, "packageID", None) and form.packageID.data else ""
     ref_id = field.data.strip()
 
-    if ref_id.startswith("mathes_") or ref_id.startswith("rare_book_"):
+    if package_id.startswith(("mathes_", "rare_book_")):
         return
 
-    if ref_id.startswith("etd_"):
-        parts = ref_id.split("_", 2)
-        if len(parts) >= 2 and parts[1].isdigit() and len(parts[1]) == 4:
-            year = int(parts[1])
+    if package_id.startswith(("etd_", "ead_")):
+        if len(ref_id) >= 5 and ref_id[:4].isdigit() and ref_id[4] == "-":
+            year = int(ref_id[:4])
             if 1914 <= year <= 2050:
                 return
-        raise validators.ValidationError('Invalid ref ID. ETD IDs must start with "etd_" followed by a 4-digit year between 1914 and 2050.')
+        raise validators.ValidationError(
+            'Invalid ref ID. For ETD packages, ref ID must start with a 4-digit year between 1914 and 2050 followed by "-" (example: 1977-Rinaldi).'
+        )
 
     r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + ref_id)
     if r.status_code != 200:
