@@ -57,13 +57,22 @@ def validate_packageID(form, field):
             raise validators.ValidationError(f'Invalid package. Missing {subfolder} directory.')
 
 def validate_refID(form, field):
-    package_id = form.packageID.data.strip() if getattr(form, "packageID", None) and form.packageID.data else ""
-    if package_id.startswith(("mathes", "etd", "rare_book")):
+    ref_id = field.data.strip()
+
+    if ref_id.startswith("mathes_") or ref_id.startswith("rare_book_"):
         return
 
-    r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + field.data.strip())
+    if ref_id.startswith("etd_"):
+        parts = ref_id.split("_", 2)
+        if len(parts) >= 2 and parts[1].isdigit() and len(parts[1]) == 4:
+            year = int(parts[1])
+            if 1914 <= year <= 2050:
+                return
+        raise validators.ValidationError('Invalid ref ID. ETD IDs must start with "etd_" followed by a 4-digit year between 1914 and 2050.')
+
+    r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + ref_id)
     if r.status_code != 200:
-        raise validators.ValidationError(f'Invalid ASpace request. \"{field.data.strip()}\" returns HTTP {str(r.status_code)}')
+        raise validators.ValidationError(f'Invalid ASpace request. \"{ref_id}\" returns HTTP {str(r.status_code)}')
     elif len(r.json()['archival_objects']) != 1:
         raise validators.ValidationError(f'Invalid ref ID. Found {str(len(r.json()["archival_objects"]))} matching archival objects.')
 
