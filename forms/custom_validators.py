@@ -46,8 +46,8 @@ def validate_packageID(form, field):
     
     if not "_" in field.data:
         raise validators.ValidationError('Invalid package ID.')
-    elif not field.data.startswith(("apap", "ger", "mss", "ua", "rare_book", "mathes", "etd")):
-        raise validators.ValidationError('Invalid package ID. Does not start with an allowed ID prefix (apap, ger, mss, ua, rare_book, mathes, etd).')
+    elif not field.data.startswith(("apap", "ger", "mss", "ua", "rarebook", "mathes", "etd")):
+        raise validators.ValidationError('Invalid package ID. Does not start with an allowed ID prefix (apap, ger, mss, ua, rarebook, mathes, etd).')
     elif not field.data.strip() in available_packages:
         raise validators.ValidationError(f'Error: Package {field.data.strip()} not found in \\\\Lincoln\\Library\\SPE_Processing\\backlog.')
     packageDirs = os.listdir(os.path.join("/backlog", field.data.split("_")[0], field.data.strip()))
@@ -60,7 +60,7 @@ def validate_refID(form, field):
     package_id = form.packageID.data.strip() if getattr(form, "packageID", None) and form.packageID.data else ""
     ref_id = field.data.strip()
 
-    if package_id.startswith(("mathes_", "rare_book_")):
+    if package_id.startswith(("mathes_", "rarebook_")):
         return
 
     if package_id.startswith(("etd_", "ead_")):
@@ -86,7 +86,7 @@ def validate_refID_recreate(form, field):
 
     # Fallback for collections using non-ASpace identifiers.
     dao_root = "/SPE_DAO"
-    fallback_collections = ["etd", "mathes", "rare_book"]
+    fallback_collections = ["etd", "mathes", "rarebook"]
     for collection_id in fallback_collections:
         if os.path.isdir(os.path.join(dao_root, collection_id, ref_id)):
             return

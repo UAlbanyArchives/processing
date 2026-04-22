@@ -19,7 +19,7 @@ def getCollectionID(refID):
 
     # Fallback for collections that use external IDs and are not present in ASpace.
     dao_root = "/SPE_DAO"
-    fallback_collections = ["etd", "mathes", "rare_book"]
+    fallback_collections = ["etd", "mathes", "rarebook"]
     for collectionID in fallback_collections:
         if os.path.isdir(os.path.join(dao_root, collectionID, refID)):
             return collectionID

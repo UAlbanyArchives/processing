@@ -45,7 +45,7 @@ def main():
     args = parser.parse_args()
     processingDir = "/backlog"
     package_collection_id = normalize_collection_id(args.packageID.rsplit("_", 1)[0])
-    external_ref_collections = {"etd", "mathes", "rare_book"}
+    external_ref_collections = {"etd", "mathes", "rarebook"}
     skip_aspace = package_collection_id in external_ref_collections
 
     print("Uploading Digital Object with the following entries:")
