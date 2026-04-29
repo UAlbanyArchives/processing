@@ -115,6 +115,10 @@ AIP.bag.save(processes=4, manifests=True)
 print ("AIP Saved!")
 print ("Finished save at " + str(datetime.now()))
 
+print ("Staging AIP...")
+AIP.stage()
+print ("Finished staging at " + str(datetime.now()))
+
 if not args.update:
     print ("Checking AIP against SIP manifest...")
     if AIP.checkSIPManifest:

@@ -10,7 +10,8 @@ class ArchivalInformationPackage:
 
     def __init__(self):
         self.excludeList = ["thumbs.db", "desktop.ini", ".ds_store"]
-        self.aipPath= "/Archives/AIP"
+        self.aipPath = "/Archives/AIP"
+        self.stagingPath = "/Archives/AIP_staging"
         
     def load(self, path):
         if not os.path.isdir(path):
@@ -46,6 +47,19 @@ class ArchivalInformationPackage:
         self.bag = bagit.make_bag(self.bagDir, metadata)
         self.data = os.path.join(self.bagDir, "data")
         
+    def stage(self):
+        dest_path = os.path.join(self.stagingPath, self.colID, self.accession)
+
+        # ensure parent directories exist
+        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+        print (f"Copying {self.bagDir} to {dest_path}...")
+
+        # copy the directory tree
+        #shutil.copytree(self.bagDir, dest_path)
+        self.copyRsync(self.bagDir, dest_path)
+
+
     def clean(self):
         for root, dirs, files in os.walk(self.data):
             for file in files:
