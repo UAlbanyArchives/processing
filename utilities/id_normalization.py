@@ -4,7 +4,7 @@ import re
 def normalize_collection_id(value):
     """Normalize collection identifiers to canonical app format.
 
-    Example: "Rare Book" -> "rarebook"
+    Example: "Rare Item" -> "rareitem"
     """
     if value is None:
         return ""
