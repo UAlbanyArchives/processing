@@ -371,8 +371,8 @@ def main():
     
     print ("Success!")
     print (f"Check out the digital object at:")
-    #print (f"https://media.archives.albany.edu/test.html?collection={collection_ID}&id={args.refID}")
-    print (dao_url)
+    print (f"https://media.archives.albany.edu/test.html?collection={collection_ID}&id={args.refID}")
+    #print (dao_url)
 
 if __name__ == "__main__":
     main()

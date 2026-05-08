@@ -48,7 +48,7 @@ def main():
             index_hocr_to_solr(args.collectionID, args.refID)
         print ("Generating IIIF manifest...")
         create_manifest(args.collectionID, args.refID)
-        #print (f"Check out digital object at:")
+        #print (f"Check out the digital object at:")
         #print (f"https://media.archives.albany.edu/test.html?collection={args.collection_ID}&id={args.refID}")
     elif args.mode == "all-no-pdf":
         from iiiflow import make_thumbnail, create_ptif, create_hocr, create_manifest, index_hocr_to_solr, create_transcription
@@ -66,7 +66,7 @@ def main():
             index_hocr_to_solr(args.collectionID, args.refID)
         print ("Generating IIIF manifest...")
         create_manifest(args.collectionID, args.refID)
-        #print (f"Check out digital object at:")
+        #print (f"Check out the digital object at:")
         #print (f"https://media.archives.albany.edu/test.html?collection={args.collection_ID}&id={args.refID}")
     elif args.mode == "pdf":
         from iiiflow import create_pdf
@@ -94,15 +94,16 @@ def main():
         from iiiflow import create_manifest  
         print ("Generating IIIF manifest...")
         create_manifest(args.collectionID, args.refID)
-        #print (f"Check out digital object at:")
+        #print (f"Check out the digital object at:")
         #print (f"https://media.archives.albany.edu/test.html?collection={args.collection_ID}&id={args.refID}")
     else:
         raise ValueError(f"ERROR: incorrect mode {args.mode}.")
 
     print ("Success!")
     dao_url = f"{manifest_url_root}/{args.collectionID}/{args.refID}/manifest.json"
-    print (f"Check out digital object at:")
-    print (f"https://media.archives.albany.edu?manifest={dao_url}")
+    print (f"Check out the digital object at:")
+    print (f"https://media.archives.albany.edu?collection={args.collectionID}&id={args.refID}")
+    #print (f"https://media.archives.albany.edu?manifest={dao_url}")
 
 if __name__ == "__main__":
     main()

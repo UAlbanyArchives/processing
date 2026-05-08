@@ -536,7 +536,8 @@ for item in ordered_items:
         error_count += 1
         print ("Uploaded with errors.")
     print (f"Check out the digital object at:")
-    print (dao_url)
+    print (f"https://media.archives.albany.edu/test.html?collection={ID}&id={aspace_id}")
+    #print (dao_url)
 
 
 if error_count > 0:
