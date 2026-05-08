@@ -342,13 +342,13 @@ def recreate():
         mode = form.mode.data
         #collectionID = form.collectionID.data.strip()
         refID = form.refID.data.strip()
-        from aspaceDAO import getCollectionID
-        collectionID = getCollectionID(refID)
-        print (f"CollectionID: {collectionID}")
 
         if not form.validate():
             flash(form.errors, 'error')
         else:
+            from aspaceDAO import getCollectionID
+            collectionID = getCollectionID(refID)
+            print (f"CollectionID: {collectionID}")
             log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-recreate-{mode}-{collectionID}-{refID}.log"
 
             command = [

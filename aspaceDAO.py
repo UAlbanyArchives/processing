@@ -9,7 +9,7 @@ client = ASnakeClient()
 def getCollectionID(refID):
     # returns a collection ID for a refID
     r = client.get("repositories/2/find_by_id/archival_objects?ref_id[]=" + refID)
-    if r.status_code == 200:
+    if r.status_code == 200 and len(r.json().get("archival_objects", [])) == 1:
         item = client.get(r.json()["archival_objects"][0]["ref"]).json()
         resourceURI = item["resource"]["ref"]
         resource = client.get(resourceURI).json()
