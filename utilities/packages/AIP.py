@@ -57,7 +57,7 @@ class ArchivalInformationPackage:
 
         # copy the directory tree
         #shutil.copytree(self.bagDir, dest_path)
-        self.copyRsync(self.bagDir, dest_path)
+        self.copyRsync(os.path.join(self.bagDir, ""), dest_path)
 
 
     def clean(self):
