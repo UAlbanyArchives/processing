@@ -196,34 +196,34 @@ def main():
     else:
         masters_count = 0
         derivatives_count = 0
+        input_format_lower = args.input_format.lower()
+
+        def collect_matching_files(root_dir):
+            matched_files = []
+            for walk_root, _, walk_files in os.walk(root_dir):
+                for input_file in walk_files:
+                    input_file_path = os.path.join(walk_root, input_file)
+                    input_file_lower = input_file.lower()
+                    if input_format_lower != "ogg_mp3":
+                        if input_file_lower.endswith(f".{input_format_lower}"):
+                            matched_files.append(input_file_path)
+                    else:
+                        if input_file_lower.endswith(".ogg") or input_file_lower.endswith(".mp3"):
+                            matched_files.append(input_file_path)
+            return matched_files
+
         if os.path.isdir(derivatives):
-            for input_file in os.listdir(derivatives):
-                input_file_path = os.path.join(derivatives, input_file)
-                if args.input_format.lower() != "ogg_mp3":
-                    if os.path.isfile(input_file_path) and input_file.lower().endswith(f".{args.input_format.lower()}"):
-                        derivatives_count += 1
-                        file_list.append(input_file_path)
-                else:
-                    if os.path.isfile(input_file_path):
-                        if input_file.lower().endswith(".ogg") or input_file.lower().endswith(".mp3"):
-                            derivatives_count += 1
-                            file_list.append(input_file_path)
+            derivative_matches = collect_matching_files(derivatives)
+            derivatives_count = len(derivative_matches)
+            file_list.extend(derivative_matches)
         if derivatives_count == 0:
             if os.path.isdir(masters):
-                for input_file in os.listdir(masters):
-                    input_file_path = os.path.join(masters, input_file)
-                    if args.input_format.lower() != "ogg_mp3":
-                        if os.path.isfile(input_file_path) and input_file.lower().endswith(f".{args.input_format.lower()}"):
-                            masters_count += 1
-                            file_list.append(input_file_path)
-                    else:
-                        if os.path.isfile(input_file_path):
-                            if input_file.lower().endswith(".ogg") or input_file.lower().endswith(".mp3"):
-                                derivatives_count += 1
-                                file_list.append(input_file_path)
+                master_matches = collect_matching_files(masters)
+                masters_count = len(master_matches)
+                file_list.extend(master_matches)
 
         if masters_count == 0 and derivatives_count == 0:
-            raise FileNotFoundError(f"ERROR: no {args.input_format.lower()} files found in package {args.packageID} masters or derivatives.")
+            raise FileNotFoundError(f"ERROR: no {input_format_lower} files found in package {args.packageID} masters or derivatives.")
 
     # Move access files to SPE_DAO
     for access_file in file_list:
