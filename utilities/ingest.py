@@ -56,9 +56,18 @@ def main(ID, path=None, accession=None):
             raise Exception("ERROR: Could not find accession with ID: " + accession)
         else:
             accessionObject = json.loads(accessionResponse["results"][0]["json"])
-            if "id_1" in accessionObject.keys():
-                accessionID = accessionObject["id_0"] + "-" + accessionObject["id_1"]
-            if accession != accessionID:
+            # Build a stable accession identifier from available ArchivesSpace id parts.
+            accession_id_parts = []
+            for key in ["id_0", "id_1", "id_2", "id_3"]:
+                value = accessionObject.get(key)
+                if value is not None:
+                    value = str(value).strip()
+                    if value:
+                        accession_id_parts.append(value)
+            if len(accession_id_parts) == 0:
+                raise Exception("ERROR: accession record is missing identifier fields: " + accessionObject["uri"])
+            accessionID = "-".join(accession_id_parts)
+            if str(accession).strip() != accessionID:
                 raise Exception("ERROR: Could not find exact accession with ID: " + accession)
             if not "content_description" in accessionObject.keys():
                 raise Exception("ERROR: no content description in " + accessionID + " accession, " + accessionObject["uri"])
