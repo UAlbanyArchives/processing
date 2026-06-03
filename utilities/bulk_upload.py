@@ -49,15 +49,14 @@ def count_copy_candidates(source_path: str, input_fmt: str) -> int:
 
     if os.path.isdir(source_path):
         count = 0
-        for entry in os.scandir(source_path):
-            if not entry.is_file():
-                continue
-            name = entry.name.lower()
-            if fmt == "ogg_mp3":
-                if name.endswith(".ogg") or name.endswith(".mp3"):
+        for walk_root, _, walk_files in os.walk(source_path):
+            for input_file in walk_files:
+                input_file_lower = input_file.lower()
+                if fmt == "ogg_mp3":
+                    if input_file_lower.endswith(".ogg") or input_file_lower.endswith(".mp3"):
+                        count += 1
+                elif input_file_lower.endswith(f".{fmt}"):
                     count += 1
-            elif name.endswith(f".{fmt}"):
-                count += 1
         return count
 
     if os.path.isfile(source_path):
@@ -350,10 +349,21 @@ for item in ordered_items:
         format_path = os.path.join(object_path, input_fmt.lower())
     os.mkdir(format_path)
     if os.path.isdir(file_path):
-        for file in os.scandir(file_path):
-            if file.name.lower().endswith(input_fmt):
-                print (f"\t\tMoving {file.path} to {format_path}...")
-                shutil.copy2(file.path, format_path)
+        input_fmt_lower = input_fmt.lower().strip()
+        for walk_root, _, walk_files in os.walk(file_path):
+            for input_file in walk_files:
+                input_file_path = os.path.join(walk_root, input_file)
+                input_file_lower = input_file.lower()
+                if input_fmt_lower == "ogg_mp3":
+                    if input_file_lower.endswith(".ogg"):
+                        print (f"\t\tMoving {input_file_path} to {format_path}...")
+                        shutil.copy2(input_file_path, format_path)
+                    elif input_file_lower.endswith(".mp3"):
+                        print (f"\t\tMoving {input_file_path} to {assoc_path}...")
+                        shutil.copy2(input_file_path, assoc_path)
+                elif input_file_lower.endswith(f".{input_fmt_lower}"):
+                    print (f"\t\tMoving {input_file_path} to {format_path}...")
+                    shutil.copy2(input_file_path, format_path)
     elif os.path.isfile(file_path):
         if input_fmt.lower() == "ogg_mp3":
             src = Path(file_path)
