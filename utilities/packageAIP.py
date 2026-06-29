@@ -1,4 +1,5 @@
 import os
+import errno
 import stat
 import time
 import shutil
@@ -20,25 +21,78 @@ aipDir = "/Archives/AIP"
 logDir = "/logs"
 
 def safe_rmtree(path, retries=5, delay=1.0):
-    """Robust recursive directory removal with retries and better diagnostics."""
+    """Robust recursive directory removal with retries and better diagnostics.
 
-    def on_rm_error(func, path, exc_info):
-        # Try to remove read-only or locked files
+    SMB shares can temporarily report ENOTEMPTY during concurrent scans/indexing;
+    this retries a bottom-up remove and tolerates entries disappearing mid-pass.
+    """
+
+    def _try_chmod(target):
         try:
-            os.chmod(path, stat.S_IWRITE)
-            func(path)
-        except Exception as e:
-            print(f"Failed to remove {path}: {e}")
+            os.chmod(target, stat.S_IWRITE)
+        except OSError:
+            # Best-effort only.
+            pass
+
+    def _delete_tree_once(root_path):
+        # Delete files first, then child dirs, and finally the root dir.
+        for current_root, dirs, files in os.walk(root_path, topdown=False):
+            for name in files:
+                file_path = os.path.join(current_root, name)
+                try:
+                    os.unlink(file_path)
+                except FileNotFoundError:
+                    # Another process removed it between walk and unlink.
+                    continue
+                except OSError as e:
+                    _try_chmod(file_path)
+                    try:
+                        os.unlink(file_path)
+                    except OSError:
+                        print(f"Failed to remove {file_path}: {e}")
+
+            for name in dirs:
+                dir_path = os.path.join(current_root, name)
+                try:
+                    os.rmdir(dir_path)
+                except FileNotFoundError:
+                    continue
+                except OSError as e:
+                    _try_chmod(dir_path)
+                    try:
+                        os.rmdir(dir_path)
+                    except OSError:
+                        print(f"Failed to remove {dir_path}: {e}")
+
+        try:
+            os.rmdir(root_path)
+        except FileNotFoundError:
+            return
+        except OSError as e:
+            _try_chmod(root_path)
+            try:
+                os.rmdir(root_path)
+            except OSError:
+                raise e
 
     for attempt in range(1, retries + 1):
         try:
-            shutil.rmtree(path, onerror=on_rm_error)
+            if not os.path.exists(path):
+                print(f"Already removed {path}")
+                return
+
+            _delete_tree_once(path)
             if not os.path.exists(path):
                 print(f"Removed {path}")
                 return
-        except Exception as e:
+        except OSError as e:
             print(f"Attempt {attempt}/{retries} to remove {path} failed: {e}")
             traceback.print_exc()
+
+            # ENOTEMPTY on network filesystems is often transient; retry below.
+            if e.errno not in (errno.ENOTEMPTY, errno.EBUSY, errno.EACCES):
+                # For non-transient errors, continue to diagnostics and retries.
+                pass
 
         # See if something’s still in there
         if os.path.exists(path):
@@ -50,7 +104,7 @@ def safe_rmtree(path, retries=5, delay=1.0):
         time.sleep(delay)
 
     # If it still exists after all retries, raise a clear error
-    raise OSError(f"ould not completely remove {path} after {retries} attempts.")
+    raise OSError(f"Could not completely remove {path} after {retries} attempts.")
 
 
 print("Began at " + str(datetime.now()))
