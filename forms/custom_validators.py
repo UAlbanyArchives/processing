@@ -56,6 +56,63 @@ def validate_packageID(form, field):
         if not subfolder in packageDirs:
             raise validators.ValidationError(f'Invalid package. Missing {subfolder} directory.')
 
+def _matches_input_format(file_name, input_format):
+    fmt = input_format.lower().strip().lstrip(".")
+    lowered = file_name.lower()
+    if fmt == "ogg_mp3":
+        return lowered.endswith(".ogg") or lowered.endswith(".mp3")
+    return lowered.endswith(f".{fmt}")
+
+def _has_matching_files(search_root, input_format):
+    if not os.path.isdir(search_root):
+        return False
+    for _, _, files in os.walk(search_root):
+        for name in files:
+            if _matches_input_format(name, input_format):
+                return True
+    return False
+
+def validate_input_format_exists(form, field):
+    package_id = form.packageID.data.strip() if getattr(form, "packageID", None) and form.packageID.data else ""
+    input_format = field.data.strip() if field.data else ""
+
+    # Let other validators report missing/invalid package and format values.
+    if not package_id or not input_format or "_" not in package_id:
+        return
+
+    collection_id = package_id.split("_")[0]
+    package_path = os.path.join("/backlog", collection_id, package_id)
+    masters = os.path.join(package_path, "masters")
+    derivatives = os.path.join(package_path, "derivatives")
+
+    if not os.path.isdir(package_path):
+        return
+
+    sub_path = form.subPath.data.strip() if getattr(form, "subPath", None) and form.subPath.data else ""
+
+    if sub_path:
+        normalized_sub_path = os.path.normpath(sub_path.replace("\\", os.sep)).lstrip(os.sep)
+        masters_target = os.path.join(masters, normalized_sub_path)
+        derivatives_target = os.path.join(derivatives, normalized_sub_path)
+
+        for target in [derivatives_target, masters_target]:
+            if os.path.isfile(target):
+                if _matches_input_format(os.path.basename(target), input_format):
+                    return
+            elif _has_matching_files(target, input_format):
+                return
+
+        raise validators.ValidationError(
+            f'No {input_format} files were found at sub path "{sub_path}" in package {package_id}.'
+        )
+
+    if _has_matching_files(derivatives, input_format) or _has_matching_files(masters, input_format):
+        return
+
+    raise validators.ValidationError(
+        f'No {input_format} files were found in package {package_id} under derivatives or masters.'
+    )
+
 def validate_refID(form, field):
     package_id = form.packageID.data.strip() if getattr(form, "packageID", None) and form.packageID.data else ""
     ref_id = field.data.strip()

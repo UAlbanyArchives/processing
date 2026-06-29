@@ -1,6 +1,6 @@
 from wtforms import Form, StringField, SelectField, TextAreaField, BooleanField, validators
 from wtforms.validators import DataRequired, AnyOf, ValidationError
-from forms.custom_validators import validate_packageID, validate_refID
+from forms.custom_validators import validate_packageID, validate_refID, validate_input_format_exists
 
 class UploadForm(Form):
     packageID = StringField('Package ID', [validators.Length(min=26, max=32), validate_packageID])
@@ -12,7 +12,10 @@ class UploadForm(Form):
     allowed_inputs = ['png', 'tif', 'jpg', 'pdf', 'ogg_mp3', "webm"]
     inputFormat = StringField(
         'Input Path',
-        validators=[AnyOf(values=allowed_inputs, message=f"Invalid input format. Must be one of {', '.join(allowed_inputs)}")]
+        validators=[
+            AnyOf(values=allowed_inputs, message=f"Invalid input format. Must be one of {', '.join(allowed_inputs)}"),
+            validate_input_format_exists,
+        ]
     )
 
     resource_type = SelectField(
