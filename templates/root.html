@@ -38,6 +38,7 @@
       <li>Digitized materials have already been accessioned and processed, so they just need to be <a href="/ingest">ingested into the backlog or processing storage.</a>
         <ul>
           <li>Digitized files that are not accessioned will be logged in the <span class="code">DigitizationExtentTracker.xlsx</span> at <span class="code">\\Lincoln\Library\SPE_Automated\DigitizationExtentTracker</span> so we can track the size and quantity of what we're digitizing.</li>
+      <li>For more information on ingesting, please see <a href="https://albany.atlassian.net/wiki/spaces/SCA/pages/47808567/Ingesting+Digital+Materials">these instructions</a>, or <a href="https://albany.atlassian.net/wiki/spaces/SCA/pages/1210941502/Ingesting+Guidance+for+Students">this guide for students</a>.</li>
         </ul>
       </li>
     </ul>
@@ -90,14 +91,20 @@ backlog/
           <li>There is an option during final packaging to keep the masters files in the processing package instead of files in the <span class="code">SIP</span>. This typically for born-digital materials when certain files may not be retained after appraisal.</li>
         </ul>
       </li>
-      <li>The <a href="/derivatives">derivatives</a> tab automatically creates derivative access files.
+      <li>The <a href="/derivatives">Image Derivatives</a> tab automatically creates derivative access files.
         <ul>
-          <li>This currently only works for images and PDFs but we can add A/V converstions.</li>
-          <li>JPG and PNG derivatives create single derivative images for each file.</li>
-          <li>PDF derivatives create a single PDF for all image files in a folder.</li>
+          <li>This tab currently works for all non-A/V material.</li>
+          <li>The outputs are the accepted formats for our IIIF system: jpg (preferable)and png (for higher resolution items, who need to retian their quality).</li>
+		  <li>You can also use this tab to make PDF derivatives of your material, though you will still need jpg or png derivatives for the Upload Process.</li>
         </ul>
       </li>
-      <li>The <a href="/ocr">OCR</a> tab will automatically OCR and embed text in PDFs.</li>
+	        <li>The <a href="/av_derivatives">A/V Derivatives</a> tab is meant for audio and video files.
+        <ul>
+          <li>This tab currently works for exclusively for A/V material.</li>
+          <li>The outputs are the accepted formats for our IIIF system: ogg and mp3 for audio, and webm for video.</li>
+        </ul>
+      </li>
+      <li>For more information on derivatives, please see <a href="https://albany.atlassian.net/wiki/spaces/SCA/pages/47811138/Creating+Derivatives">these instructions </a> or <a href="https://albany.atlassian.net/wiki/spaces/SCA/pages/1214021676/Derivative+Guidance+for+Students">this guiddance for students. </a></li>
     </ul>
 
     <div class="code">backlog/
@@ -128,19 +135,21 @@ backlog/
     │  │  ├─ metadata/ 
   </div>
 
-  <h3><li>Describing materials in ArchivesSpace and Uploading to Hyrax</li></h3>
+  <h3><li>Describing and Uploading materials in ArchivesSpace</li></h3>
 
     <h5>Single file upload</h5>
 
       <ul class="mb-3">
-        <li>Single files, such as PDF publications or scans of folders can be directly <a href="https://archives.albany.edu/concern/daos/new" target="_blank">uploaded into Hyrax</a>.</li>
-        <li>The <a href="/aspace">Connect to ASpace</a> tab will describe single files in ArchivesSpace, no spreadsheets needed!</li>
+        <li>Single files, such as PDF publications or scans of folders can be directly uploaded using the <a href="/upload">Single Upload Tab</a>.</li>
+        <li>The <a href="/recreate">Recreate DAO</a> tab will allow you to perform single steps of the Single Upload process, including OCR, generating thumbnail, and more.</li>
+		<li>The Single Upload tab also has an <a href="/add_items"> Add item records to Aspace</a> option that allows you to add item records to a preexisting object. This is helpful when only scanning part of a folder (which is not recommended but happens!).</li>
+		<li
       </ul>
 
     <h5>Batch upload</h5>
 
       <ul>
-        <li>Describing digital materials for bulk upload uses the same <a href="https://github.com/UAlbanyArchives/asInventory">asInventory</a> spreadsheets we use for data entry.</li>
+        <li>Describing digital materials for bulk upload uses the Bulk Upload Sheet, which can be found in the "Download empty sheet" under the "Bulk Upload" tab or in the <a href="/list"> List files and empty sheet</a> tab.</li>
         <li>Keep the speadsheets used during processing in the <span class="code">metadata</span> folder within the processing package.</li>
         <li>Processing packages include <span class="code">derivatives.txt</span> and <span class="code">masters.txt</span> files that list file names for easy copying and pasting into an asInventory spreadsheet.</li>
         <li>You can re-generate these lists after creating or editing derivatives using the <a href="/list">List tab</a>.</li>
@@ -149,21 +158,14 @@ backlog/
       <img class="m-3" width="900px" src="/static/daos.png" />
 
       <ol class="mb-3">
-        <li>List all files in the last column of an asInventory spreadsheet.</li>
-        <li>Use the <a href="buildHyraxUpload">Build Hyrax Upload</a> tab to prepare a bulk upload spreadsheet for Hyrax.
-          <ul>
-            <li>Add Resource Type and either Licenses or Rights Statements to all objects in the Hyrax upload .tsv file</li>
-          </ul>
-        </li>
-        <li><a href="https://wiki.albany.edu/display/SCA/Batch+Upload+to+Hyrax">Bulk upload into Hyrax</a> still requires the command line and server access.</li>
-        <li>Use the <a href="buildASpaceUpdate">Build ASpace Update</a> tab to update the asInventory spreadsheet with the Hyrax URIs after files have been uploaded to Hryax on the command line.</li>
-        <li>Use <a href="https://github.com/UAlbanyArchives/asInventory">asInventory</a> to add digital object records in ArchivesSpace that will link to the Hyrax URIs.</li>
+        <li>For more information on the Bulk Upload Process, please see <a href="https://albany.atlassian.net/wiki/spaces/SCA/pages/1336967208/Bulk+Upload+Instructions"> these instructions</a> or <a href="https://albany.atlassian.net/wiki/spaces/SCA/pages/1340178433/Upload+Glossary">this glossary</a>.</li>
+        <li>Use <a href="https://github.com/UAlbanyArchives/asInventory">asInventory</a> to add digital object records in ArchivesSpace that will link to the digital objects.</li>
       </ol>
 
   <h3><li>Packaging into permanent preservation storage</li></h3>
 
     <ul>
-      <li>Once processing is complete and all files have been uploaded into Hyrax and described in ArchivesSpace, finalize everything by packaging it into an "AIP" in permanent preservation storage.</li>
+      <li>Once processing is complete and all files have been uploaded and described in ArchivesSpace, finalize everything by packaging it into an "AIP" in permanent preservation storage.</li>
       <li>This step is needed after both single file and bulk uploads.</li>
       <li>Use the <a href="/package">Package AIP</a> tab to combine both the <span class="code">SIP</span> and the processing package into an <span class="code">AIP</span>.
         <ul>
