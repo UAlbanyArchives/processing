@@ -15,6 +15,23 @@ from datetime import datetime, timezone
 from pathlib import Path, PureWindowsPath, PurePosixPath
 from id_normalization import normalize_collection_id
 
+WARC_INPUT_FORMATS = {"warc", "warc.gz"}
+
+
+def is_warc_file(file_name):
+    lowered = (file_name or "").lower()
+    return lowered.endswith(".warc") or lowered.endswith(".warc.gz")
+
+
+def input_matches_format(file_name, input_format):
+    lowered = (file_name or "").lower()
+    fmt = (input_format or "").lower().strip().lstrip(".")
+    if fmt == "ogg_mp3":
+        return lowered.endswith(".ogg") or lowered.endswith(".mp3")
+    if fmt in WARC_INPUT_FORMATS:
+        return is_warc_file(lowered)
+    return lowered.endswith(f".{fmt}")
+
 def main():
     parser = argparse.ArgumentParser(description="Process digital object upload arguments.")
 
@@ -72,11 +89,13 @@ def main():
     """
 
     av_formats = ["ogg_mp3", "webm"]
+    input_format_lower = args.input_format.lower().strip()
+    is_warc_upload = input_format_lower in WARC_INPUT_FORMATS
     metadata = {}
     metadata["preservation_package"] = args.packageID
     metadata["resource_type"] = args.resource_type
     metadata["license"] = args.license
-    if not args.input_format.lower() in av_formats:
+    if not input_format_lower in av_formats and not is_warc_upload:
         metadata["behavior"] = args.behavior
     if args.rights_statement:
         metadata["rights_statement"] = args.rights_statement
@@ -159,9 +178,9 @@ def main():
         # Determine the main file (prefer derivatives, then masters)
         main_file = None
         # handle input_format like "ogg_mp3" (means accept either .ogg or .mp3)
-        if derivatives_path.is_file() and derivatives_path.suffix[1:].lower() in args.input_format.lower():
+        if derivatives_path.is_file() and input_matches_format(derivatives_path.name, input_format_lower):
             main_file = derivatives_path
-        elif masters_path.is_file() and masters_path.suffix[1:].lower() in args.input_format.lower():
+        elif masters_path.is_file() and input_matches_format(masters_path.name, input_format_lower):
             main_file = masters_path
         else:
             raise FileNotFoundError(
@@ -203,13 +222,8 @@ def main():
             for walk_root, _, walk_files in os.walk(root_dir):
                 for input_file in walk_files:
                     input_file_path = os.path.join(walk_root, input_file)
-                    input_file_lower = input_file.lower()
-                    if input_format_lower != "ogg_mp3":
-                        if input_file_lower.endswith(f".{input_format_lower}"):
-                            matched_files.append(input_file_path)
-                    else:
-                        if input_file_lower.endswith(".ogg") or input_file_lower.endswith(".mp3"):
-                            matched_files.append(input_file_path)
+                    if input_matches_format(input_file, input_format_lower):
+                        matched_files.append(input_file_path)
             return matched_files
 
         if os.path.isdir(derivatives):
@@ -227,38 +241,45 @@ def main():
 
     # Move access files to SPE_DAO
     for access_file in file_list:
-        ext = os.path.splitext(access_file)[1][1:].lower()
+        access_file_lower = access_file.lower()
+        if is_warc_file(access_file_lower):
+            ext = "warc.gz"
+        else:
+            ext = os.path.splitext(access_file)[1][1:].lower()
         format_path = os.path.join(object_path, ext)
         if not os.path.isdir(format_path):
             os.mkdir(format_path)
         shutil.copy(access_file, format_path)
 
-    # make thumbnail
-    print ("Creating thumbnail")
-    iiiflow.make_thumbnail(collection_ID, args.refID)
-
     pdf_formats = ["png", "jpg"]
-    if not args.input_format.lower() in av_formats:
-        if args.PDF.lower() == "true" and args.input_format.lower() in pdf_formats:
-            print ("Creating alternative PDF...")
-            iiiflow.create_pdf(collection_ID, args.refID)
+    if not is_warc_upload:
+        # make thumbnail
+        print ("Creating thumbnail")
+        iiiflow.make_thumbnail(collection_ID, args.refID)
 
-    # Create pyramidal tifs
-    print ("Creating pyramidal tifs (.ptifs)...")
-    iiiflow.create_ptif(collection_ID, args.refID)
+        if not input_format_lower in av_formats:
+            if args.PDF.lower() == "true" and input_format_lower in pdf_formats:
+                print ("Creating alternative PDF...")
+                iiiflow.create_pdf(collection_ID, args.refID)
 
-    if not args.input_format.lower() in av_formats:
-        # OCR
-        print ("Recognizing text...")
-        iiiflow.create_hocr(collection_ID, args.refID)
+        # Create pyramidal tifs
+        print ("Creating pyramidal tifs (.ptifs)...")
+        iiiflow.create_ptif(collection_ID, args.refID)
 
-        # Index HOCR
-        print ("Indexing text for content search...")
-        iiiflow.index_hocr_to_solr(collection_ID, args.refID)
+        if not input_format_lower in av_formats:
+            # OCR
+            print ("Recognizing text...")
+            iiiflow.create_hocr(collection_ID, args.refID)
+
+            # Index HOCR
+            print ("Indexing text for content search...")
+            iiiflow.index_hocr_to_solr(collection_ID, args.refID)
+        else:
+            # Create AV transcription
+            print ("Transcribing...")
+            iiiflow.create_transcription(collection_ID, args.refID)
     else:
-        # Create AV transcription
-        print ("Transcribing...")
-        iiiflow.create_transcription(collection_ID, args.refID)
+        print("Skipping thumbnail, PDF, ptif, OCR, and transcription steps for WARC first-pass upload.")
 
     # Create manifest
     print ("Generating IIIF manifest...")

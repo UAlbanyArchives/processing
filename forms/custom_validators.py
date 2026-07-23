@@ -61,6 +61,8 @@ def _matches_input_format(file_name, input_format):
     lowered = file_name.lower()
     if fmt == "ogg_mp3":
         return lowered.endswith(".ogg") or lowered.endswith(".mp3")
+    if fmt == "warc":
+        return lowered.endswith(".warc") or lowered.endswith(".warc.gz")
     return lowered.endswith(f".{fmt}")
 
 def _has_matching_files(search_root, input_format):

@@ -9,7 +9,7 @@ class UploadForm(Form):
     createPDF = BooleanField("Include PDF", default=True)
     content_warning = TextAreaField("Content Warning")
 
-    allowed_inputs = ['png', 'tif', 'jpg', 'pdf', 'ogg_mp3', "webm"]
+    allowed_inputs = ['png', 'tif', 'jpg', 'pdf', 'ogg_mp3', "webm", "warc", "warc.gz"]
     inputFormat = StringField(
         'Input Path',
         validators=[
@@ -77,3 +77,6 @@ class UploadForm(Form):
 
         if input_fmt == "webm" and field.data != "Video":
             raise ValidationError("If input format is 'webm', resource type must be 'Video'.")
+
+        if input_fmt in ("warc", "warc.gz") and field.data not in ("Web Archives", "Email"):
+            raise ValidationError("If input format is 'warc' or 'warc.gz', resource type must be 'Web Archives' or 'Email'.")
