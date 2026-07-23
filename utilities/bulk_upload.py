@@ -25,7 +25,7 @@ def validate_col_id(col_id: str) -> bool:
     return bool(re.match(pattern, col_id))
 
 # Validations
-ALLOWED_INPUT_FORMATS = {"jpg", "png", "ogg_mp3", "webm"}
+ALLOWED_INPUT_FORMATS = {"jpg", "png", "ogg_mp3", "webm", "warc", "warc.gz"}
 ALLOWED_RESOURCE_TYPES = {
     "audio", "bound volume", "email", "dataset", "document", "image", "map",
     "mixed materials", "pamphlet", "periodical", "slides", "video", "web archives", "other"
@@ -41,6 +41,13 @@ LICENSE_LOOKUP = {
 }
 RIGHTS_FALLBACK = "https://rightsstatements.org/page/InC-EDU/1.0/"
 
+WARC_INPUT_FORMATS = {"warc", "warc.gz"}
+
+
+def is_warc_file(file_name: str) -> bool:
+    lower_name = (file_name or "").lower()
+    return lower_name.endswith(".warc") or lower_name.endswith(".warc.gz")
+
 
 def count_copy_candidates(source_path: str, input_fmt: str) -> int:
     fmt = (input_fmt or "").lower().strip()
@@ -54,6 +61,9 @@ def count_copy_candidates(source_path: str, input_fmt: str) -> int:
                 input_file_lower = input_file.lower()
                 if fmt == "ogg_mp3":
                     if input_file_lower.endswith(".ogg") or input_file_lower.endswith(".mp3"):
+                        count += 1
+                elif fmt in WARC_INPUT_FORMATS:
+                    if is_warc_file(input_file_lower):
                         count += 1
                 elif input_file_lower.endswith(f".{fmt}"):
                     count += 1
@@ -76,6 +86,8 @@ def count_copy_candidates(source_path: str, input_fmt: str) -> int:
             paired_cross = Path(cross_str).parent / paired_name
             paired_exists = paired_same.is_file() or paired_cross.is_file()
             return 2 if paired_exists else 1
+        if fmt in WARC_INPUT_FORMATS:
+            return 1 if is_warc_file(source_path) else 0
         return 1 if Path(source_path).suffix.lower() == f".{fmt}" else 0
 
     return 0
@@ -247,7 +259,7 @@ for preflight_row in preflight_rows:
 
     # Check if SPE_DAO path already exists
     object_path = os.path.join(SPE_DAO, ID, aspace_id)
-    if os.path.isdir(aspace_id):
+    if os.path.isdir(object_path):
         errors.append(f"SPE_DAO object path '{object_path}' already exists for row {row_num}")
 
     # Validate controlled vocab fields
@@ -305,6 +317,8 @@ for item in ordered_items:
     license = rec["License/Rights"]
     input_fmt = rec["Input Format"]
     behavior = rec["Behavior"]
+    input_fmt_lower = input_fmt.lower().strip()
+    is_warc_upload = input_fmt_lower in WARC_INPUT_FORMATS
 
     print(f"\tProcessing {title} ({aspace_id})...")
 
@@ -313,7 +327,7 @@ for item in ordered_items:
         os.mkdir(collectionDir)
 
     object_path = os.path.join(collectionDir, aspace_id)
-    if os.path.isdir(aspace_id):
+    if os.path.isdir(object_path):
         raise FileExistsError(f"Error: access path {object_path} already present.")
     os.mkdir(object_path)
 
@@ -341,15 +355,16 @@ for item in ordered_items:
 
     print(f"\tCreated metadata.yml at {metadata_path}")
 
-    if input_fmt.lower() == "ogg_mp3":
+    if input_fmt_lower == "ogg_mp3":
         format_path = os.path.join(object_path, "ogg")
         assoc_path = os.path.join(object_path, "mp3")
         os.mkdir(assoc_path)
+    elif is_warc_upload:
+        format_path = os.path.join(object_path, "warc.gz")
     else:
-        format_path = os.path.join(object_path, input_fmt.lower())
+        format_path = os.path.join(object_path, input_fmt_lower)
     os.mkdir(format_path)
     if os.path.isdir(file_path):
-        input_fmt_lower = input_fmt.lower().strip()
         for walk_root, _, walk_files in os.walk(file_path):
             for input_file in walk_files:
                 input_file_path = os.path.join(walk_root, input_file)
@@ -361,11 +376,15 @@ for item in ordered_items:
                     elif input_file_lower.endswith(".mp3"):
                         print (f"\t\tMoving {input_file_path} to {assoc_path}...")
                         shutil.copy2(input_file_path, assoc_path)
+                elif is_warc_upload:
+                    if is_warc_file(input_file_lower):
+                        print (f"\t\tMoving {input_file_path} to {format_path}...")
+                        shutil.copy2(input_file_path, format_path)
                 elif input_file_lower.endswith(f".{input_fmt_lower}"):
                     print (f"\t\tMoving {input_file_path} to {format_path}...")
                     shutil.copy2(input_file_path, format_path)
     elif os.path.isfile(file_path):
-        if input_fmt.lower() == "ogg_mp3":
+        if input_fmt_lower == "ogg_mp3":
             src = Path(file_path)
             ext = src.suffix.lower()
             base = src.with_suffix("")
@@ -398,47 +417,52 @@ for item in ordered_items:
 
             # Copy the paired file
             shutil.copy2(paired_source, dest_associated)
+        elif is_warc_upload:
+            shutil.copy2(file_path, format_path)
         else:
             shutil.copy2(file_path, format_path)
     else:
         raise FileNotFoundError(f"Error: File path {file_path} does not exist.")
 
-    # make thumbnail
-    #print ("\tCreating thumbnail")
-    iiiflow.make_thumbnail(ID, aspace_id)
-
     img_formats = ["png", "jpg"]
-    if ".pdf" in original_file.lower():
-        print (f"\tMoving {original_file} to package as original file...")
-        original_path = os.path.join(derivatives_path, os.path.normpath(original_file))
-        if not os.path.isfile(original_path):
-            original_path = os.path.join(masters_path, os.path.normpath(original_file))
+    if not is_warc_upload:
+        # make thumbnail
+        #print ("\tCreating thumbnail")
+        iiiflow.make_thumbnail(ID, aspace_id)
+
+        if ".pdf" in original_file.lower():
+            print (f"\tMoving {original_file} to package as original file...")
+            original_path = os.path.join(derivatives_path, os.path.normpath(original_file))
             if not os.path.isfile(original_path):
-                raise FileNotFoundError(f"Missing original file {original_file}.")
-        pdf_path = os.path.join(object_path, "pdf")
-        os.mkdir(pdf_path)
-        shutil.copy2(original_path, pdf_path)
-    elif input_fmt.lower() in img_formats:
-        print ("\tCreating alternative PDF...")
-        iiiflow.create_pdf(ID, aspace_id)
+                original_path = os.path.join(masters_path, os.path.normpath(original_file))
+                if not os.path.isfile(original_path):
+                    raise FileNotFoundError(f"Missing original file {original_file}.")
+            pdf_path = os.path.join(object_path, "pdf")
+            os.mkdir(pdf_path)
+            shutil.copy2(original_path, pdf_path)
+        elif input_fmt_lower in img_formats:
+            print ("\tCreating alternative PDF...")
+            iiiflow.create_pdf(ID, aspace_id)
 
-    # Create pyramidal tifs
-    if input_fmt.lower() in img_formats:
-        print ("\tCreating pyramidal tifs (.ptifs)...")
-        iiiflow.create_ptif(ID, aspace_id)
+        # Create pyramidal tifs
+        if input_fmt_lower in img_formats:
+            print ("\tCreating pyramidal tifs (.ptifs)...")
+            iiiflow.create_ptif(ID, aspace_id)
 
-    # OCR/transcription
-    if input_fmt.lower() in img_formats:
-        print ("\tRecognizing text...")
-        iiiflow.create_hocr(ID, aspace_id)
-    elif input_fmt.lower() in ("ogg", "mp3", "ogg_mp3", "webm"):
-        print ("\tTranscribing...")
-        iiiflow.create_transcription(ID, aspace_id)
+        # OCR/transcription
+        if input_fmt_lower in img_formats:
+            print ("\tRecognizing text...")
+            iiiflow.create_hocr(ID, aspace_id)
+        elif input_fmt_lower in ("ogg", "mp3", "ogg_mp3", "webm"):
+            print ("\tTranscribing...")
+            iiiflow.create_transcription(ID, aspace_id)
 
-    # Index HOCR
-    if input_fmt.lower() in img_formats:
-        print ("\tIndexing text for content search...")
-        iiiflow.index_hocr_to_solr(ID, aspace_id)
+        # Index HOCR
+        if input_fmt_lower in img_formats:
+            print ("\tIndexing text for content search...")
+            iiiflow.index_hocr_to_solr(ID, aspace_id)
+    else:
+        print("\tSkipping thumbnail, PDF, ptif, OCR, and transcription steps for WARC first-pass upload.")
 
     # Create manifest
     print ("\tGenerating IIIF manifest...")

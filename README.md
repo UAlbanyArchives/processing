@@ -11,6 +11,8 @@ cd processing
 ### For development
 This lets you edit files while they're served from the container.
 
+Bulk upload also supports WARC first-pass ingest. Use Input Format `warc` or `warc.gz`; the script copies the WARC into a `warc.gz` folder, writes `metadata.yml`, and builds the manifest before thumbnails and other derivatives are added later.
+
 If you don't have the default development test directories required, you can create them with:
 ```
 python setup-dev.py
