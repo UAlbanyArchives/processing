@@ -16,6 +16,7 @@ services:
       - '/media/Library/SPE_DAO:/SPE_DAO'
       - '/media/Library/SPE_Automated/processing_logs:/logs'
       - '/media/Library/SPE_Processing/ndpaList.txt:/ndpaList.txt'
+      - '/media/Library/SPE_Processing/asInventory:/asInventory'
     environment:
       - DESCRIPTION_HARVESTER_PLUGIN_DIR=/code/description_harvester_plugins
     tty: true
