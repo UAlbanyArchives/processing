@@ -222,6 +222,11 @@ def downloadSheet():
     sheetPath = "/code/static"
     return send_from_directory(sheetPath, "Bulk_Upload_Sheet.xlsx", as_attachment=True)
 
+@app.route('/inventory/sheet', methods=['GET'])
+def downloadInventorySheet():
+    sheetPath = "/code/static"
+    return send_from_directory(sheetPath, "asInventory.xlsx", as_attachment=True)
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     error = None

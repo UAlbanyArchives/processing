@@ -22,8 +22,14 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link {{'active' if active == 'inventory' }}" aria-current="{{'page' if active == 'inventory' }}" href="/inventory">asInventory</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {{'active' if active == 'inventory' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                asInventory
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/inventory">asInventory</a>
+                <a class="dropdown-item" href="/inventory/sheet">Download Empty Sheet</a>
+              </div>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle {{'active' if active == 'ingest' }}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
