@@ -18,6 +18,7 @@ from forms.package import PackageForm
 from forms.reindex import ReindexForm
 from forms.add_items import AddItemsForm
 from forms.recreate import RecreateForm
+from forms.inventory import InventoryForm
 
 from utilities.listFiles import listFiles
 from utilities.id_normalization import normalize_collection_id
@@ -429,6 +430,45 @@ def package():
             return redirect(url_for('package'))
 
     return render_template('package.html', error=error)
+
+@app.route('/inventory', methods=['GET', 'POST'])
+def inventory():
+    error = None
+    if request.method == 'POST':
+        form = InventoryForm(request.form)
+        inventoryID = form.inventoryID.data.strip()
+        method = form.method.data
+
+        if not form.validate():
+            flash(form.errors, 'error')
+        else:
+            if method == "upload":
+                log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-asUpload-{inventoryID}.log"
+                command = [
+                    "asinventory", "upload", "--file", f"/asInventory/input/{inventoryID}.xlsx",
+                ]
+            elif method == "download":
+                log_file = f"/logs/{datetime.now().strftime('%Y-%m-%dT%H.%M.%S.%f')}-asDownload-{inventoryID}.log"
+                command = [
+                    "asinventory", "download", inventoryID,
+                ]
+            else:
+                flash({"Method": f'Error: Invalid method selected for inventory {inventoryID}.'})
+                return redirect(url_for('inventory'))
+            
+            # Add log file redirection
+            safe_command = " ".join(
+                shlex.quote(arg) for arg in ["env", "PYTHONUNBUFFERED=1", *command]
+            ) + f" >> {shlex.quote(log_file)} 2>&1 &"
+
+            # Execute the command
+            finalize = Popen(safe_command, shell=True, stdout=PIPE, stderr=PIPE)
+
+            success_msg = Markup(f'<div>Success! Checkout the log at <a href="{log_file}">{log_file}</a></div>')
+            flash(success_msg, 'success')
+            return redirect(url_for('inventory'))
+
+    return render_template('inventory.html', error=error)
 
 @app.route('/reindex', methods=['GET', 'POST'])
 def reindex():

@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% set active = "inventory" %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+  <h1>asInventory</h1>
+  <div class="h5">
+    Hey, lets upload or download inventories form ArchivesSpace!
+  </div>
+
+  <div class="h5">
+    <a href="https://albany.atlassian.net/wiki/spaces/SCA/pages/1226113071/Asinventory+App+Instructions">Wiki documentation</a>
+  </div>
+
+  <form action="/inventory" method="post">
+    <div class="mb-3">
+      <label for="inventoryID" class="form-label">ID</label>
+      <input type="inventoryID" class="form-control" name="inventoryID" id="inventoryID" aria-describedby="inventoryIDHelp">
+      <div id="inventoryIDHelp" class="form-text">The collection or ref_id, such as apap101 or d84b53060a3ec89d6d40223941cd0211.</div>
+    </div>
+    <fieldset class="mb-4">
+    <legend class="visually-hidden">Action</legend>
+
+    <div class="form-check">
+        <input class="form-check-input"
+            type="radio"
+          name="method"
+            id="upload"
+          value="upload">
+        <label class="form-check-label" for="upload">
+        Upload
+        </label>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input"
+            type="radio"
+          name="method"
+            id="download"
+          value="download"
+            checked>
+        <label class="form-check-label" for="download">
+        Download
+        </label>
+    </div>
+    </fieldset>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+{% endblock %}

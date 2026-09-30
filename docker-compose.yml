@@ -7,6 +7,7 @@ services:
     environment:
       - TZ=America/New_York
       - DESCRIPTION_HARVESTER_PLUGIN_DIR=/code/description_harvester_plugins
+      - ASINVENTORY_BASE_DIR=/asInventory
     env_file:
       - .env
     volumes:
@@ -15,6 +16,7 @@ services:
       - '..\flask_processing_app_testing\automated\DigitizationExtentTracker:/DigitizationExtentTracker'
       - '..\flask_processing_app_testing\backlog:/backlog'
       - '..\flask_processing_app_testing\ingest:/ingest'
+      - '..\flask_processing_app_testing\asInventory:/asInventory'
       - '..\flask_processing_app_testing\SPE_DAO:/SPE_DAO'
       - '..\flask_processing_app_testing\processing_logs:/logs'
       - '..\flask_processing_app_testing\ndpaList.txt:/ndpaList.txt'
