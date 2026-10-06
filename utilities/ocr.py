@@ -111,7 +111,7 @@ for root, dirs, files in os.walk(ocrPath):
                         # fix sizing
                         print (f"\tRestoring to {pageDPI[page_count]} dpi...")
                         size_cmd = ['convert', '-units', 'pixelsperinch', '-density', pageDPI[page_count], image_path, image_path]
-                        if ext.lower() == "png":
+                        if ext.lower() == ".png":
                             size_cmd.insert(1, '-units pixelsperinch')
                         #print (f"\trunning {' '.join(size_cmd)}")
                         size_resp = process(size_cmd)

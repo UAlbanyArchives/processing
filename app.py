@@ -1,10 +1,10 @@
 import os
 import shlex
 from flask import Flask
-from flask import flash, redirect, Markup
+from flask import flash, redirect
 from flask import request
 from flask import url_for, send_from_directory
-from markupsafe import escape
+from markupsafe import Markup, escape
 from flask import render_template
 
 from forms.ingest import IngestForm
